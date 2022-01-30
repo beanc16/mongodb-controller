@@ -18,31 +18,27 @@ class MongoDbConnection
         this.dbName = mongoDbName;
     }
     
-    async run({ dbName, callback })
+    async run({ dbName })
     {
-        return new Promise(async (resolve, reject) =>
+        return new Promise((resolve, reject) =>
         {
-            try
+            this.client.connect()
+            .then(() =>
             {
-                await this.client.connect();
-                
                 const db = (dbName) 
                             ? this.client.db(dbName) 
                             : this.client.db(this.dbName);
-                
-                if (callback != null)
-                {
-                    await callback(db, this.client);
-                }
 
                 resolve(db, this.client);
-            }
-            
-            catch (err)
+            })
+            .catch((err) =>
             {
-                this.close();
-                reject(err);
-            }
+                this.close()
+                .finally(function ()
+                {
+                    reject(err);
+                })
+            });
         });
     }
     
@@ -54,7 +50,7 @@ class MongoDbConnection
         return new Promise((resolve, reject) =>
         {				
             this.run({ dbName })
-            .then(function (db, client)
+            .then(function (db/*, client*/)
             {
                 const collection = db.collection(collectionName);
                 resolve(collection);
@@ -68,7 +64,7 @@ class MongoDbConnection
     
     async close()
     {
-        return new Promise(async (resolve, reject) =>
+        return new Promise((resolve, reject) =>
         {
             this.client.close()
             .then(function ()
