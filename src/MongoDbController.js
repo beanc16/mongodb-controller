@@ -70,7 +70,7 @@ class MongoDbController
                 Model: this.Model,
                 controllerName: this.name,
             })
-            .then(function ()
+            .then(() =>
             {
                 MongoDbControllerHelpers.queryResource({
                     connection: this._connection,
@@ -126,7 +126,7 @@ class MongoDbController
                 Model: this.Model,
                 controllerName: this.name,
             })
-            .then(function ()
+            .then(() =>
             {
                 console.info(`Inserting one ${this.Model.name} into database...`);
     
@@ -169,7 +169,7 @@ class MongoDbController
                 Model: this.Model,
                 controllerName: this.name,
             })
-            .then(function ()
+            .then(() =>
             {
                 console.info(`Updating one ${this.Model.name} in database...`);
     
@@ -213,7 +213,7 @@ class MongoDbController
                 Model: this.Model,
                 controllerName: this.name,
             })
-            .then(function ()
+            .then(() =>
             {
                 console.info(`Deleting one ${this.Model.name} from database...`);
     
