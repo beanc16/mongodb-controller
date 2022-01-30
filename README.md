@@ -3,11 +3,9 @@
 A [Data Access Layer (DAL)](https://en.wikipedia.org/wiki/Data_access_layer) for abstracting and simplifying calls to [Mongo databases](https://www.mongodb.com/what-is-mongodb).
 
 <!-- Badges -->
-<!-- TODO: Uncomment after first publish
 ![npm][npm-version]
 ![license][npm-license]
 ![downloads][npm-downloads]
--->
 
 
 
