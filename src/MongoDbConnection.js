@@ -34,7 +34,7 @@ class MongoDbConnection
             .catch((err) =>
             {
                 this.close()
-                .finally(function ()
+                .finally(() =>
                 {
                     reject(err);
                 })
@@ -50,12 +50,12 @@ class MongoDbConnection
         return new Promise((resolve, reject) =>
         {				
             this.run({ dbName })
-            .then(function (db/*, client*/)
+            .then((db/*, client*/) =>
             {
                 const collection = db.collection(collectionName);
                 resolve(collection);
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 reject(err);
             });
@@ -67,11 +67,11 @@ class MongoDbConnection
         return new Promise((resolve, reject) =>
         {
             this.client.close()
-            .then(function ()
+            .then(() =>
             {
                 resolve();
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 reject(err);
             });

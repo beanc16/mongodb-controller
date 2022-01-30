@@ -29,7 +29,7 @@ class MongoDbControllerHelpers
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
             connection.getCollection({ collectionName })
-            .then(async function (collection)
+            .then(async (collection) =>
             {
                 // Make query
                 const result = await collection.find(findParams)
@@ -49,12 +49,12 @@ class MongoDbControllerHelpers
                 const mongoResults = new MongoDbResults({ results: models });
                 resolve(mongoResults);
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(async function ()
+            .finally(async () =>
             {
                 await connection.close();
             });
@@ -68,12 +68,12 @@ class MongoDbControllerHelpers
         Model,
     })
     {
-        return new Promise(function (resolve, reject)
+        return new Promise((resolve, reject) =>
         {
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
             connection.getCollection({ collectionName })
-            .then(async function (collection)
+            .then(async (collection) =>
             {
                 // Make query
                 const result = await collection.findOne(findParams);
@@ -91,12 +91,12 @@ class MongoDbControllerHelpers
                 const mongoResults = new MongoDbResults({ results: model });
                 resolve(mongoResults);
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(async function ()
+            .finally(async () =>
             {
                 await connection.close();
             });
@@ -134,10 +134,10 @@ class MongoDbControllerHelpers
         Model,
     })
     {
-        return new Promise(function (resolve, reject)
+        return new Promise((resolve, reject) =>
         {
             connection.getCollection({ collectionName })
-            .then(async function (collection)
+            .then(async (collection) =>
             {
                 obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
 
@@ -158,12 +158,12 @@ class MongoDbControllerHelpers
                     throw new ModelIsInvalidError(Model.name);
                 }
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(async function ()
+            .finally(async () =>
             {
                 await connection.close();
             });
@@ -184,10 +184,10 @@ class MongoDbControllerHelpers
         Model,
     })
     {
-        return new Promise(function (resolve, reject)
+        return new Promise((resolve, reject) =>
         {
             connection.getCollection({ collectionName })
-            .then(async function (collection)
+            .then(async (collection) =>
             {
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
@@ -231,12 +231,12 @@ class MongoDbControllerHelpers
                     throw new ModelIsInvalidError(Model.name);
                 }
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(async function ()
+            .finally(async () =>
             {
                 await connection.close();
             });
@@ -256,10 +256,10 @@ class MongoDbControllerHelpers
         Model,
     })
     {
-        return new Promise(function (resolve, reject)
+        return new Promise((resolve, reject) =>
         {
             connection.getCollection({ collectionName })
-            .then(async function (collection)
+            .then(async (collection) =>
             {
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
@@ -279,12 +279,12 @@ class MongoDbControllerHelpers
                 const mongoResults = new MongoDbResults({ results: model });
                 resolve(mongoResults);
             })
-            .catch(function (err)
+            .catch((err) =>
             {
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(async function ()
+            .finally(async () =>
             {
                 await connection.close();
             });
@@ -303,7 +303,7 @@ class MongoDbControllerHelpers
         controllerName,
     })
     {
-        return new Promise(function (resolve, reject)
+        return new Promise((resolve, reject) =>
         {
             console.debug(`Validating ${controllerName} static variables...`);
 

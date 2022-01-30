@@ -43,18 +43,18 @@ class MongoDbController
                     sortOptions: this.sortOptions,
                     Model: this.Model,
                 })
-                .then(function (mongoResults)
+                .then((mongoResults) =>
                 {
                     console.info("Successfully queried resources from database.");
                     resolve(mongoResults);
                 })
-                .catch(function (errResults)
+                .catch((errResults) =>
                 {
                     console.error("Failed to query resources from database:", errResults);
                     reject(errResults);
                 });
             })
-            .catch(function (errors)
+            .catch((errors) =>
             {
                 reject(errors);
             });
@@ -98,13 +98,13 @@ class MongoDbController
                                `${this.name}.getMostRecent()`);
                     }
                 })
-                .catch(function (errResults)
+                .catch((errResults) =>
                 {
                     console.error("Failed to query resources from database:", errResults);
                     resolve(errResults);
                 });
             })
-            .catch(function (errors)
+            .catch((errors) =>
             {
                 reject(errors);
             });
@@ -147,7 +147,7 @@ class MongoDbController
                     reject(errResults);
                 });
             })
-            .catch(function (errors)
+            .catch((errors) =>
             {
                 reject(errors);
             });
@@ -191,7 +191,7 @@ class MongoDbController
                     reject(errResults);
                 });
             })
-            .catch(function (errors)
+            .catch((errors) =>
             {
                 reject(errors);
             });
@@ -234,7 +234,7 @@ class MongoDbController
                     reject(errResults);
                 });
             })
-            .catch(function (errors)
+            .catch((errors) =>
             {
                 reject(errors);
             });
