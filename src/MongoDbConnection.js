@@ -6,7 +6,7 @@ const {
 
 
 
-class MongoConnection
+class MongoDbConnection
 {
     constructor({ dbName, uri })
     {
@@ -120,4 +120,4 @@ function getMongoDbName(dbName)
 
 
 
-module.exports = MongoConnection;
+module.exports = MongoDbConnection;
