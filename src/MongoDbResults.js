@@ -1,4 +1,4 @@
-class MongoResults
+class MongoDbResults
 {
     constructor({
         results = null,
@@ -37,4 +37,4 @@ class MongoResults
 
 
 
-module.exports = MongoResults;
+module.exports = MongoDbResults;

@@ -1,5 +1,5 @@
 const { ObjectId } = require("mongodb");
-const MongoResults = require("./MongoResults");
+const MongoDbResults = require("./MongoDbResults");
 const {
     CollectionNameNotSetError,
     EmptyResultError,
@@ -46,12 +46,12 @@ class MongoDbControllerHelpers
                 const models = MongoDbControllerHelpers.getAsModels(array, Model);
                 
                 // Initialize results
-                const mongoResults = new MongoResults({ results: models });
+                const mongoResults = new MongoDbResults({ results: models });
                 resolve(mongoResults);
             })
             .catch(function (err)
             {
-                const errResults = new MongoResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
             .finally(function ()
@@ -88,12 +88,12 @@ class MongoDbControllerHelpers
                 const model = MongoDbControllerHelpers.getAsModel(result, Model);
                 
                 // Initialize results
-                const mongoResults = new MongoResults({ results: model });
+                const mongoResults = new MongoDbResults({ results: model });
                 resolve(mongoResults);
             })
             .catch(function (err)
             {
-                const errResults = new MongoResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
             .finally(function ()
@@ -160,7 +160,7 @@ class MongoDbControllerHelpers
             })
             .catch(function (err)
             {
-                const errResults = new MongoResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
             .finally(function ()
@@ -218,7 +218,7 @@ class MongoDbControllerHelpers
                     });
                     
                     // Initialize results
-                    const mongoResults = new MongoResults({
+                    const mongoResults = new MongoDbResults({
                         results: {
                             old: oldModel,
                             new: newModel,
@@ -233,7 +233,7 @@ class MongoDbControllerHelpers
             })
             .catch(function (err)
             {
-                const errResults = new MongoResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
             .finally(function ()
@@ -276,12 +276,12 @@ class MongoDbControllerHelpers
                 const model = MongoDbControllerHelpers.getAsModel(result.value, Model);
                 
                 // Initialize results
-                const mongoResults = new MongoResults({ results: model });
+                const mongoResults = new MongoDbResults({ results: model });
                 resolve(mongoResults);
             })
             .catch(function (err)
             {
-                const errResults = new MongoResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
             .finally(function ()
