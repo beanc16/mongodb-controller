@@ -54,7 +54,7 @@ class MongoDbControllerHelpers
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(function ()
+            .finally(async function ()
             {
                 await connection.close();
             });
@@ -96,7 +96,7 @@ class MongoDbControllerHelpers
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(function ()
+            .finally(async function ()
             {
                 await connection.close();
             });
@@ -163,7 +163,7 @@ class MongoDbControllerHelpers
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(function ()
+            .finally(async function ()
             {
                 await connection.close();
             });
@@ -236,7 +236,7 @@ class MongoDbControllerHelpers
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(function ()
+            .finally(async function ()
             {
                 await connection.close();
             });
@@ -284,7 +284,7 @@ class MongoDbControllerHelpers
                 const errResults = new MongoDbResults({ error: err, status: 500 });
                 reject(errResults);
             })
-            .finally(function ()
+            .finally(async function ()
             {
                 await connection.close();
             });
