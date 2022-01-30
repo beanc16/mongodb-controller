@@ -155,7 +155,7 @@ class MongoControllerHelpers
                 }
                 else
                 {
-                    throw new ModelIsInvalidError();
+                    throw new ModelIsInvalidError(Model.name);
                 }
             })
             .catch(function (err)
@@ -228,7 +228,7 @@ class MongoControllerHelpers
                 }
                 else
                 {
-                    throw new ModelIsInvalidError();
+                    throw new ModelIsInvalidError(Model.name);
                 }
             })
             .catch(function (err)
@@ -311,12 +311,12 @@ class MongoControllerHelpers
 
             if (!collectionName)
             {
-                errors.push(new CollectionNameNotSetError());
+                errors.push(new CollectionNameNotSetError(collectionName));
             }
 
             if (!Model)
             {
-                errors.push(new ModelNotSetError());
+                errors.push(new ModelNotSetError(controllerName));
             }
 
             if (errors.length > 0)

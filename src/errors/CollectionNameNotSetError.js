@@ -1,13 +1,8 @@
-const errMsg = `The controller must have a \
-static collectionName set`;
-
-
-
 class CollectionNameNotSetError extends Error
 {
-    constructor()
+    constructor(controllerName)
     {
-        super(errMsg);
+        super(`${controllerName} must have a static collectionName set`);
         this.name = "CollectionNameNotSetError";
     }
 }

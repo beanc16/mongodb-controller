@@ -1,13 +1,8 @@
-const errMsg = `The controller must have a \
-static Model set`;
-
-
-
 class ModelNotSetError extends Error
 {
-    constructor()
+    constructor(controllerName)
     {
-        super(errMsg);
+        super(`${controllerName} must have a static Model set`);
         this.name = "ModelNotSetError";
     }
 }

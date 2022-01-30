@@ -1,13 +1,8 @@
-const errMsg = `The model is invalid (try \
-checking the casing of parameters)`;
-
-
-
 class ModelIsInvalidError extends Error
 {
-    constructor()
+    constructor(modelName)
     {
-        super(errMsg);
+        super(`${modelName} is invalid (try checking the casing of parameters)`);
         this.name = "ModelIsInvalidError";
     }
 }
