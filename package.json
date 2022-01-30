@@ -10,6 +10,9 @@
   "main": "src/index.js",
   "scripts": {
     "lint": "eslint .",
+    "test": "",
+    "prepublishOnly": "npm run test && npm run lint",
+    "preversion": "npm run lint",
     "version": "git add -A src",
     "postversion": "git push && git push --tags",
     "publish": "git checkout master && git merge develop master && git push origin master"
