@@ -30,8 +30,11 @@
   "bugs": {
     "url": "https://github.com/beanc16/mongodb-controller/issues"
   },
+  "homepage": "https://github.com/beanc16/mongodb-controller#readme",
   "files": [
     "src/**/*"
   ],
-  "homepage": "https://github.com/beanc16/mongodb-controller#readme"
+  "dependencies": {
+    "mongodb": "^4.3.1"
+  }
 }
