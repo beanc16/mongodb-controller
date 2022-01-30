@@ -9,6 +9,7 @@
   "license": "MIT",
   "main": "src/index.js",
   "scripts": {
+    "lint": "eslint .",
     "version": "git add -A src",
     "postversion": "git push && git push --tags",
     "publish": "git checkout master && git merge develop master && git push origin master"
@@ -36,5 +37,8 @@
   ],
   "dependencies": {
     "mongodb": "^4.3.1"
+  },
+  "devDependencies": {
+    "eslint": "^8.8.0"
   }
 }
