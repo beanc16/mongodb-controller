@@ -32,7 +32,7 @@ class MongoDbController
                 Model: this.Model,
                 controllerName: this.name,
             })
-            .then(function ()
+            .then(() =>
             {
                 console.info("Querying resources from database...");
     
