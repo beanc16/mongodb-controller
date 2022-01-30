@@ -1,4 +1,3 @@
-// Mongo
 const { MongoClient } = require("mongodb");
 const {
     MongoDbNameNotSetError,
