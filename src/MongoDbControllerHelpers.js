@@ -10,7 +10,7 @@ const {
 
 
 
-class MongoControllerHelpers
+class MongoDbControllerHelpers
 {
     /* 
      * GETS
@@ -26,7 +26,7 @@ class MongoControllerHelpers
     {
         return new Promise(function (resolve, reject)
         {
-            findParams = MongoControllerHelpers.convertIdToObjectId(findParams);
+            findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
             connection.getCollection({ collectionName })
             .then(async function (collection)
@@ -43,7 +43,7 @@ class MongoControllerHelpers
                 }
                 
                 // Parse array into an array of models
-                const models = MongoControllerHelpers.getAsModels(array, Model);
+                const models = MongoDbControllerHelpers.getAsModels(array, Model);
                 
                 // Initialize results
                 const mongoResults = new MongoResults({ results: models });
@@ -70,7 +70,7 @@ class MongoControllerHelpers
     {
         return new Promise(function (resolve, reject)
         {
-            findParams = MongoControllerHelpers.convertIdToObjectId(findParams);
+            findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
             connection.getCollection({ collectionName })
             .then(async function (collection)
@@ -85,7 +85,7 @@ class MongoControllerHelpers
                 }
                 
                 // Parse into model
-                const model = MongoControllerHelpers.getAsModel(result, Model);
+                const model = MongoDbControllerHelpers.getAsModel(result, Model);
                 
                 // Initialize results
                 const mongoResults = new MongoResults({ results: model });
@@ -109,7 +109,7 @@ class MongoControllerHelpers
 
         for (let i = 0; i < array.length; i++)
         {
-            const model = MongoControllerHelpers.getAsModel(array[i], Model);
+            const model = MongoDbControllerHelpers.getAsModel(array[i], Model);
             models.push(model);
         }
         
@@ -139,10 +139,10 @@ class MongoControllerHelpers
             connection.getCollection({ collectionName })
             .then(async function (collection)
             {
-                obj = MongoControllerHelpers.convertIdToObjectId(obj);
+                obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
 
                 // Make query
-                const model = MongoControllerHelpers.getAsModel(obj, Model);
+                const model = MongoDbControllerHelpers.getAsModel(obj, Model);
 
                 // Validation is successful or there is no validation
                 if (!model.isValid || model.isValid())
@@ -189,10 +189,10 @@ class MongoControllerHelpers
             connection.getCollection({ collectionName })
             .then(async function (collection)
             {
-                findParams = MongoControllerHelpers.convertIdToObjectId(findParams);
+                findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Make query
-                const validationModel = MongoControllerHelpers.getAsModel(obj, Model);
+                const validationModel = MongoDbControllerHelpers.getAsModel(obj, Model);
 
                 // Validation is successful or there is no validation
                 if (!validationModel.isValid || validationModel.isValid())
@@ -209,10 +209,10 @@ class MongoControllerHelpers
                     }
                     
                     // Parse into model
-                    const oldModel = MongoControllerHelpers.getAsModel(result.value, Model);
+                    const oldModel = MongoDbControllerHelpers.getAsModel(result.value, Model);
 
                     // Add any fields to newModel that weren't changed for output
-                    const newModel = MongoControllerHelpers.addFieldsFromOneModelToOther({
+                    const newModel = MongoDbControllerHelpers.addFieldsFromOneModelToOther({
                         to: obj,
                         from: oldModel,
                     });
@@ -261,7 +261,7 @@ class MongoControllerHelpers
             connection.getCollection({ collectionName })
             .then(async function (collection)
             {
-                findParams = MongoControllerHelpers.convertIdToObjectId(findParams);
+                findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Delete
                 const result = await collection.findOneAndDelete(findParams);
@@ -273,7 +273,7 @@ class MongoControllerHelpers
                 }
                 
                 // Parse into model
-                const model = MongoControllerHelpers.getAsModel(result.value, Model);
+                const model = MongoDbControllerHelpers.getAsModel(result.value, Model);
                 
                 // Initialize results
                 const mongoResults = new MongoResults({ results: model });
@@ -356,4 +356,4 @@ class MongoControllerHelpers
 
 
 
-module.exports = MongoControllerHelpers;
+module.exports = MongoDbControllerHelpers;
