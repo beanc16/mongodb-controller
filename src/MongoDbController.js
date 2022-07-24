@@ -16,6 +16,7 @@ class MongoDbController
         dbName: this.dbName,
         uri: this.mongoUri,
     });
+    static logger = console;
 
 
 
@@ -34,8 +35,6 @@ class MongoDbController
             })
             .then(() =>
             {
-                console.info("Querying resources from database...");
-    
                 MongoDbControllerHelpers.queryResources({
                     connection: this._connection,
                     findParams,
@@ -45,12 +44,11 @@ class MongoDbController
                 })
                 .then((mongoResults) =>
                 {
-                    console.info("Successfully queried resources from database.");
                     resolve(mongoResults);
                 })
                 .catch((errResults) =>
                 {
-                    console.error("Failed to query resources from database:", errResults);
+                    this.logger.error("Failed to query resources from database:", errResults);
                     reject(errResults);
                 });
             })
@@ -82,16 +80,15 @@ class MongoDbController
                 {
                     if (mongoResults && mongoResults.results)
                     {
-                        console.info("Successfully queried resources from database.");
                         resolve(mongoResults.results);
                     }
     
                     else
                     {
-                        console.error(
+                        this.logger.error(
                             "Successfully queried resources from " + 
                             "database, but an unknown error " + 
-                            "occurred while parsing the results."
+                            "occurred while parsing the results.", mongoResults
                         );
     
                         reject(`An unknown error occurred in ` + 
@@ -100,7 +97,7 @@ class MongoDbController
                 })
                 .catch((errResults) =>
                 {
-                    console.error("Failed to query resources from database:", errResults);
+                    this.logger.error("Failed to query resources from database:", errResults);
                     resolve(errResults);
                 });
             })
@@ -128,8 +125,6 @@ class MongoDbController
             })
             .then(() =>
             {
-                console.info(`Inserting one ${this.Model.name} into database...`);
-    
                 MongoDbControllerHelpers.insertOne({
                     connection: this._connection,
                     obj,
@@ -138,12 +133,11 @@ class MongoDbController
                 })
                 .then((model) =>
                 {
-                    console.info(`Successfully inserted one ${this.Model.name} into database.`);
                     resolve(model);
                 })
                 .catch((errResults) =>
                 {
-                    console.error(`Failed to insert one ${this.Model.name} into database:`, errResults);
+                    this.logger.error(`Failed to insert one ${this.Model.name} into database:`, errResults);
                     reject(errResults);
                 });
             })
@@ -171,8 +165,6 @@ class MongoDbController
             })
             .then(() =>
             {
-                console.info(`Updating one ${this.Model.name} in database...`);
-    
                 MongoDbControllerHelpers.findOneAndUpdate({
                     connection: this._connection,
                     findParams,
@@ -182,12 +174,11 @@ class MongoDbController
                 })
                 .then((model) =>
                 {
-                    console.info(`Successfully updated one ${this.Model.name} in database.`);
                     resolve(model);
                 })
                 .catch((errResults) =>
                 {
-                    console.error(`Failed to update one ${this.Model.name} in database:`, errResults);
+                    this.logger.error(`Failed to update one ${this.Model.name} in database:`, errResults);
                     reject(errResults);
                 });
             })
@@ -215,8 +206,6 @@ class MongoDbController
             })
             .then(() =>
             {
-                console.info(`Deleting one ${this.Model.name} from database...`);
-    
                 MongoDbControllerHelpers.findOneAndDelete({
                     connection: this._connection,
                     findParams,
@@ -225,12 +214,11 @@ class MongoDbController
                 })
                 .then((model) =>
                 {
-                    console.info(`Successfully deleted one ${this.Model.name} from database.`);
                     resolve(model);
                 })
                 .catch((errResults) =>
                 {
-                    console.error(`Failed to delete one ${this.Model.name} from database:`, errResults);
+                    this.logger.error(`Failed to delete one ${this.Model.name} from database:`, errResults);
                     reject(errResults);
                 });
             })
