@@ -39,7 +39,7 @@ class MongoDbControllerHelpers
                 // Empty results
                 if (array.length === 0)
                 {
-                    throw new EmptyResultsError(Model.name);
+                    //throw new EmptyResultsError(Model.name);
                 }
                 
                 // Parse array into an array of models
@@ -81,7 +81,8 @@ class MongoDbControllerHelpers
                 // Failed query (only happens in findOne)
                 if (!result)
                 {
-                    throw new EmptyResultError(Model.name);
+                    //throw new EmptyResultError(Model.name);
+                    resolve(new MongoDbResults());  // No results found
                 }
                 
                 // Parse into model
