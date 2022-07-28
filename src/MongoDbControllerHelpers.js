@@ -3,7 +3,6 @@ const MongoDbResults = require("./MongoDbResults");
 const {
     CollectionNameNotSetError,
     EmptyResultError,
-    EmptyResultsError,
     ModelNotSetError,
     ModelIsInvalidError,
 } = require("./errors");
