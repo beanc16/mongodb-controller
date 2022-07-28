@@ -170,6 +170,61 @@ class MongoDbControllerHelpers
         });
     }
 
+    static async insertOneIfNotExists({
+        connection,
+        findParams,
+        obj,
+        collectionName,
+        Model,
+    })
+    {
+        return new Promise((resolve, reject) =>
+        {
+            connection.getCollection({ collectionName })
+            .then(async (collection) =>
+            {
+                obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
+
+                // Make query
+                const model = MongoDbControllerHelpers.getAsModel(obj, Model);
+
+                // Validation is successful or there is no validation
+                if (!model.isValid || model.isValid())
+                {
+                    // Insert (if findParams does not exist)
+                    const result = await collection.updateOne(findParams, {
+                        "$setOnInsert": model,
+                    }, {
+                        upsert: true,
+                    });
+
+                    const results = new MongoDbResults({
+                        results: {
+                            model,
+                            result,
+                        },
+                    });
+
+                    // Return the model
+                    resolve(results);
+                }
+                else
+                {
+                    throw new ModelIsInvalidError(Model.name);
+                }
+            })
+            .catch((err) =>
+            {
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
+                reject(errResults);
+            })
+            .finally(async () =>
+            {
+                await connection.close();
+            });
+        });
+    }
+
 
 
     /* 
