@@ -148,6 +148,41 @@ class MongoDbController
         });
     }
 
+    static async insertOneIfNotExists(findParams = this.findParams, obj)
+    {
+        return new Promise((resolve, reject) =>
+        {
+            MongoDbControllerHelpers.validateStaticVariables({
+                collectionName: this.collectionName,
+                Model: this.Model,
+                controllerName: this.name,
+            })
+            .then(() =>
+            {
+                MongoDbControllerHelpers.insertOneIfNotExists({
+                    connection: this._connection,
+                    findParams,
+                    obj,
+                    collectionName: this.collectionName,
+                    Model: this.Model,
+                })
+                .then((model) =>
+                {
+                    resolve(model);
+                })
+                .catch((errResults) =>
+                {
+                    this.logger.error(`Failed to insert one ${this.Model.name} into database:`, errResults);
+                    reject(errResults);
+                });
+            })
+            .catch((errors) =>
+            {
+                reject(errors);
+            });
+        });
+    }
+
 
 
     /* 
