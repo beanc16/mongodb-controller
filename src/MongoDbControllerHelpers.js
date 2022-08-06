@@ -67,6 +67,7 @@ class MongoDbControllerHelpers
         projectionParams,
         collectionName,
         Model,
+        closeConnectionWhenDone = true,
     })
     {
         return new Promise((resolve, reject) =>
@@ -100,7 +101,10 @@ class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                if (closeConnectionWhenDone !== false)
+                {
+                    await connection.close();
+                }
             });
         });
     }
@@ -261,10 +265,23 @@ class MongoDbControllerHelpers
                 // Validation is successful or there is no validation
                 if (!validationModel.isValid || validationModel.isValid())
                 {
+                    // Get the pre-update version of the Model
+                    const oldModel = await MongoDbControllerHelpers.queryResource({
+                        connection,
+                        findParams,
+                        //projectionParams,
+                        collectionName,
+                        Model,
+                        closeConnectionWhenDone: false,
+                    });
+
                     // Update (replace the given values for the obj)
                     const result = await collection.findOneAndUpdate(findParams, {
                         $set: setObj,
-                    }, { arrayFilters });
+                    }, {
+                        arrayFilters,
+                        returnDocument: "after",    // Get the updated version of the document
+                    });
 
                     // Failed query (only happens in findOne)
                     if (!result || !result.value)
@@ -272,14 +289,8 @@ class MongoDbControllerHelpers
                         throw new EmptyResultError(Model.name);
                     }
                     
-                    // Parse into model
-                    const oldModel = MongoDbControllerHelpers.getAsModel(result.value, Model);
-
-                    // Add any fields to newModel that weren't changed for output
-                    const newModel = MongoDbControllerHelpers.addFieldsFromOneModelToOther({
-                        to: setObj,
-                        from: oldModel,
-                    });
+                    // Parse the updated document into the Model
+                    const newModel = MongoDbControllerHelpers.getAsModel(result.value, Model);
                     
                     // Initialize results
                     const mongoResults = new MongoDbResults({
