@@ -32,7 +32,7 @@ class MongoDbControllerHelpers
             .then(async (collection) =>
             {
                 // Make query
-                const result = await collection.find(findParams, projectionParams)
+                const result = await collection.find(findParams, { projection: projectionParams })
                                                 .sort(sortOptions);
                 const array = await result.toArray();
 
@@ -77,7 +77,7 @@ class MongoDbControllerHelpers
             .then(async (collection) =>
             {
                 // Make query
-                const result = await collection.findOne(findParams, projectionParams);
+                const result = await collection.findOne(findParams, { projection: projectionParams });
 
                 // Failed query (only happens in findOne)
                 if (!result)
