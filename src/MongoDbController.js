@@ -200,7 +200,7 @@ class MongoDbController
 
     static async findOneAndUpdate(findParams = this.findParams, setObj, {
         arrayFilters = []
-    })
+    } = {})
     {
         return new Promise((resolve, reject) =>
         {
