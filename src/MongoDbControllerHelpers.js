@@ -264,7 +264,7 @@ class MongoDbControllerHelpers
                     // Update (replace the given values for the obj)
                     const result = await collection.findOneAndUpdate(findParams, {
                         $set: setObj,
-                    }, arrayFilters);
+                    }, { arrayFilters });
 
                     // Failed query (only happens in findOne)
                     if (!result || !result.value)
