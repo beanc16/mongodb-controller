@@ -18,6 +18,7 @@ class MongoDbControllerHelpers
     static async queryResources({
         connection,
         findParams,
+        projectionParams,
         collectionName,
         sortOptions,
         Model,
@@ -31,7 +32,7 @@ class MongoDbControllerHelpers
             .then(async (collection) =>
             {
                 // Make query
-                const result = await collection.find(findParams)
+                const result = await collection.find(findParams, projectionParams)
                                                 .sort(sortOptions);
                 const array = await result.toArray();
 
@@ -63,6 +64,7 @@ class MongoDbControllerHelpers
     static async queryResource({
         connection,
         findParams,
+        projectionParams,
         collectionName,
         Model,
     })
@@ -75,7 +77,7 @@ class MongoDbControllerHelpers
             .then(async (collection) =>
             {
                 // Make query
-                const result = await collection.findOne(findParams);
+                const result = await collection.findOne(findParams, projectionParams);
 
                 // Failed query (only happens in findOne)
                 if (!result)

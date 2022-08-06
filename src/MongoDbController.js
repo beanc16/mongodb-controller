@@ -10,6 +10,7 @@ class MongoDbController
     static dbName;
     static collectionName;
     static findParams = {};
+    static projectionParams = {};
     static sortOptions = {};
     static Model;
     static _connection = new MongoDbConnection({
@@ -24,7 +25,10 @@ class MongoDbController
      * GETS
      */
 
-    static async getAll(findParams = this.findParams)
+    static async getAll(
+        findParams = this.findParams,
+        projectionParams = this.projectionParams,
+    )
     {
         return new Promise((resolve, reject) =>
         {
@@ -38,6 +42,7 @@ class MongoDbController
                 MongoDbControllerHelpers.queryResources({
                     connection: this._connection,
                     findParams,
+                    projectionParams,
                     collectionName: this.collectionName,
                     sortOptions: this.sortOptions,
                     Model: this.Model,
@@ -59,7 +64,10 @@ class MongoDbController
         });
     }
 
-    static async getMostRecent(findParams = this.findParams)
+    static async getMostRecent(
+        findParams = this.findParams,
+        projectionParams = this.projectionParams,
+    )
     {
         return new Promise((resolve, reject) =>
         {
@@ -73,6 +81,7 @@ class MongoDbController
                 MongoDbControllerHelpers.queryResource({
                     connection: this._connection,
                     findParams,
+                    projectionParams,
                     collectionName: this.collectionName,
                     Model: this.Model,
                 })
