@@ -246,7 +246,8 @@ class MongoDbControllerHelpers
     static async findOneAndUpdate({
         connection,
         findParams,
-        setObj,
+        obj,
+        operator,
         arrayFilters,
         collectionName,
         Model,
@@ -260,7 +261,7 @@ class MongoDbControllerHelpers
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Make query
-                const validationModel = MongoDbControllerHelpers.getAsModel(setObj, Model);
+                const validationModel = MongoDbControllerHelpers.getAsModel(obj, Model);
 
                 // Validation is successful or there is no validation
                 if (!validationModel.isValid || validationModel.isValid())
@@ -275,10 +276,12 @@ class MongoDbControllerHelpers
                         closeConnectionWhenDone: false,
                     });
 
+                    // What to do with the given object
+                    const operationOnObj = {};
+                    operationOnObj[`$${operator}`] = obj;
+
                     // Update (replace the given values for the obj)
-                    const result = await collection.findOneAndUpdate(findParams, {
-                        $set: setObj,
-                    }, {
+                    const result = await collection.findOneAndUpdate(findParams, operationOnObj, {
                         arrayFilters,
                         returnDocument: "after",    // Get the updated version of the document
                     });
