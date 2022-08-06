@@ -1,6 +1,6 @@
 {
   "name": "mongodb-controller",
-  "version": "1.1.1",
+  "version": "1.2.0",
   "description": "A Data Access Layer (DAL) for abstracting and simplifying calls to Mongo databases.",
   "author": {
     "name": "beanc16",
