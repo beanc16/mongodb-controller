@@ -198,7 +198,9 @@ class MongoDbController
      * PATCHES
      */
 
-    static async findOneAndUpdate(findParams = this.findParams, obj)
+    static async findOneAndUpdate(findParams = this.findParams, setObj, {
+        arrayFilters = []
+    })
     {
         return new Promise((resolve, reject) =>
         {
@@ -212,7 +214,8 @@ class MongoDbController
                 MongoDbControllerHelpers.findOneAndUpdate({
                     connection: this._connection,
                     findParams,
-                    obj,
+                    setObj,
+                    arrayFilters,
                     collectionName: this.collectionName,
                     Model: this.Model,
                 })

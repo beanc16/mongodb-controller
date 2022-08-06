@@ -242,7 +242,8 @@ class MongoDbControllerHelpers
     static async findOneAndUpdate({
         connection,
         findParams,
-        obj,
+        setObj,
+        arrayFilters,
         collectionName,
         Model,
     })
@@ -255,15 +256,15 @@ class MongoDbControllerHelpers
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Make query
-                const validationModel = MongoDbControllerHelpers.getAsModel(obj, Model);
+                const validationModel = MongoDbControllerHelpers.getAsModel(setObj, Model);
 
                 // Validation is successful or there is no validation
                 if (!validationModel.isValid || validationModel.isValid())
                 {
                     // Update (replace the given values for the obj)
                     const result = await collection.findOneAndUpdate(findParams, {
-                        $set: obj,
-                    });
+                        $set: setObj,
+                    }, arrayFilters);
 
                     // Failed query (only happens in findOne)
                     if (!result || !result.value)
@@ -276,7 +277,7 @@ class MongoDbControllerHelpers
 
                     // Add any fields to newModel that weren't changed for output
                     const newModel = MongoDbControllerHelpers.addFieldsFromOneModelToOther({
-                        to: obj,
+                        to: setObj,
                         from: oldModel,
                     });
                     
