@@ -198,9 +198,15 @@ class MongoDbControllerHelpers
                         upsert: true,
                     });
 
+                    // Add the ID to the model
+                    const newModel = MongoDbControllerHelpers.getAsModel({
+                        _id: result.upsertedId,
+                        ...model,
+                    }, Model);
+
                     const results = new MongoDbResults({
                         results: {
-                            model,
+                            model: newModel,
                             result,
                         },
                     });
