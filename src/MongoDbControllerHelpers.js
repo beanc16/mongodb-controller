@@ -32,7 +32,7 @@ class MongoDbControllerHelpers
             {
                 // Make query
                 const result = await collection.find(findParams)
-                                               .sort(sortOptions);
+                                                .sort(sortOptions);
                 const array = await result.toArray();
 
                 // Empty results
