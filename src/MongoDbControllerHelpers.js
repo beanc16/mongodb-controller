@@ -267,7 +267,7 @@ class MongoDbControllerHelpers
                 if (!validationModel.isValid || validationModel.isValid())
                 {
                     // Get the pre-update version of the Model
-                    const oldModel = await MongoDbControllerHelpers.queryResource({
+                    const oldModelResponse = await MongoDbControllerHelpers.queryResource({
                         connection,
                         findParams,
                         //projectionParams,
@@ -298,7 +298,7 @@ class MongoDbControllerHelpers
                     // Initialize results
                     const mongoResults = new MongoDbResults({
                         results: {
-                            old: oldModel,
+                            old: oldModelResponse.results,
                             new: newModel,
                         } 
                     });
