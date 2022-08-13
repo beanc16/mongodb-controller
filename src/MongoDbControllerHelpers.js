@@ -86,13 +86,17 @@ class MongoDbControllerHelpers
                     //throw new EmptyResultError(Model.name);
                     resolve(new MongoDbResults());  // No results found
                 }
-                
-                // Parse into model
-                const model = MongoDbControllerHelpers.getAsModel(result, Model);
-                
-                // Initialize results
-                const mongoResults = new MongoDbResults({ results: model });
-                resolve(mongoResults);
+
+                // Did not fail query
+                else
+                {
+                    // Parse into model
+                    const model = MongoDbControllerHelpers.getAsModel(result, Model);
+                    
+                    // Initialize results
+                    const mongoResults = new MongoDbResults({ results: model });
+                    resolve(mongoResults);
+                }
             })
             .catch((err) =>
             {

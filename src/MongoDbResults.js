@@ -4,7 +4,7 @@ class MongoDbResults
         results = null,
         error = null,
         statusCode,
-    })
+    } = {})
     {
         this.results = results;
         this.error = error;

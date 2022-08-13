@@ -87,9 +87,14 @@ class MongoDbController
                 })
                 .then((mongoResults) =>
                 {
-                    if (mongoResults && mongoResults.results)
+                    if (mongoResults && mongoResults.results && !mongoResults.error)
                     {
                         resolve(mongoResults.results);
+                    }
+
+                    else if (mongoResults && !mongoResults.results && !mongoResults.error)
+                    {
+                        resolve();
                     }
     
                     else
