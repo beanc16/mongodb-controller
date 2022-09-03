@@ -112,6 +112,53 @@ class MongoDbControllerHelpers
             });
         });
     }
+    
+    static async aggregate({
+        connection,
+        aggregateArrayOptions,
+        collectionName,
+        sortOptions,
+        Model,
+    })
+    {
+        return new Promise(function (resolve, reject)
+        {
+            connection.getCollection({ collectionName })
+            .then(async (collection) =>
+            {
+                if (sortOptions)
+                {
+                    aggregateArrayOptions.push({ "$sort": sortOptions });
+                }
+
+                // Make query
+                const result = await collection.aggregate(aggregateArrayOptions);
+                const array = await result.toArray();
+
+                // Empty results
+                if (array.length === 0)
+                {
+                    //throw new EmptyResultsError(Model.name);
+                }
+                
+                // Parse array into an array of models
+                const models = MongoDbControllerHelpers.getAsModels(array, Model);
+                
+                // Initialize results
+                const mongoResults = new MongoDbResults({ results: models });
+                resolve(mongoResults);
+            })
+            .catch((err) =>
+            {
+                const errResults = new MongoDbResults({ error: err, status: 500 });
+                reject(errResults);
+            })
+            .finally(async () =>
+            {
+                await connection.close();
+            });
+        });
+    }
 
     static getAsModels(array, Model)
     {

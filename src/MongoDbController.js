@@ -11,6 +11,7 @@ class MongoDbController
     static collectionName;
     static findParams = {};
     static projectionParams = {};
+    static aggregateArrayOptions = [];
     static sortOptions = {};
     static Model;
     static _connection = new MongoDbConnection({
@@ -113,6 +114,43 @@ class MongoDbController
                 {
                     this.logger.error("Failed to query resources from database:", errResults);
                     resolve(errResults);
+                });
+            })
+            .catch((errors) =>
+            {
+                reject(errors);
+            });
+        });
+    }
+
+    static async aggregate(
+        aggregateArrayOptions = this.aggregateArrayOptions,
+    )
+    {
+        return new Promise((resolve, reject) =>
+        {
+            MongoDbControllerHelpers.validateStaticVariables({
+                collectionName: this.collectionName,
+                Model: this.Model,
+                controllerName: this.name,
+            })
+            .then(() =>
+            {
+                MongoDbControllerHelpers.aggregate({
+                    connection: this._connection,
+                    aggregateArrayOptions,
+                    collectionName: this.collectionName,
+                    sortOptions: this.sortOptions,
+                    Model: this.Model,
+                })
+                .then((mongoResults) =>
+                {
+                    resolve(mongoResults);
+                })
+                .catch((errResults) =>
+                {
+                    this.logger.error("Failed to aggregate resources from database:", errResults);
+                    reject(errResults);
                 });
             })
             .catch((errors) =>
