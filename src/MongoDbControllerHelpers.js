@@ -126,7 +126,7 @@ class MongoDbControllerHelpers
             connection.getCollection({ collectionName })
             .then(async (collection) =>
             {
-                if (sortOptions)
+                if (sortOptions && Object.keys(sortOptions).length > 0)
                 {
                     aggregateArrayOptions.push({ "$sort": sortOptions });
                 }
