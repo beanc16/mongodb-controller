@@ -6,6 +6,7 @@ const {
     ModelNotSetError,
     ModelIsInvalidError,
 } = require("./errors");
+const DocumentAlreadyExistsError = require("./errors/DocumentAlreadyExistsError");
 
 
 
@@ -255,21 +256,31 @@ class MongoDbControllerHelpers
                         upsert: true,
                     });
 
-                    // Add the ID to the model
-                    const newModel = MongoDbControllerHelpers.getAsModel({
-                        _id: result.upsertedId,
-                        ...model,
-                    }, Model);
+                    // Successfully inserted (if findParams does not exist)
+                    if (result.upsertedId)
+                    {
+                        // Add the ID to the model
+                        const newModel = MongoDbControllerHelpers.getAsModel({
+                            _id: result.upsertedId,
+                            ...model,
+                        }, Model);
 
-                    const results = new MongoDbResults({
-                        results: {
-                            model: newModel,
-                            result,
-                        },
-                    });
+                        const results = new MongoDbResults({
+                            results: {
+                                model: newModel,
+                                result,
+                            },
+                        });
 
-                    // Return the model
-                    resolve(results);
+                        // Return the model
+                        resolve(results);
+                    }
+
+                    // Failed to insert (if findParams does exist)
+                    else
+                    {
+                        throw new DocumentAlreadyExistsError(Model.name, "inserted");
+                    }
                 }
                 else
                 {
