@@ -257,7 +257,7 @@ class MongoDbControllerHelpers
                     });
 
                     // Successfully inserted (if findParams does not exist)
-                    if (result.upsertedId)
+                    if (result.upsertedCount > 0)
                     {
                         // Add the ID to the model
                         const newModel = MongoDbControllerHelpers.getAsModel({
