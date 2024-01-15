@@ -13,16 +13,17 @@ class MongoDbConnection
         const mongoUri = getMongoUri(uri);
         const mongoDbName = getMongoDbName(dbName);
 
+        this._mongoUri = mongoUri;
         this.client = new MongoClient(mongoUri);
         this.collections = [];
         this.dbName = mongoDbName;
     }
-    
+
     async run({ dbName })
     {
         return new Promise((resolve, reject) =>
         {
-            this.client.connect()
+            this.open()
             .then(() =>
             {
                 const db = (dbName) 
@@ -48,7 +49,7 @@ class MongoDbConnection
     })
     {
         return new Promise((resolve, reject) =>
-        {				
+        {
             this.run({ dbName })
             .then((db/*, client*/) =>
             {
@@ -61,19 +62,41 @@ class MongoDbConnection
             });
         });
     }
+
+    async open()
+    {
+        return new Promise((resolve, reject) =>
+        {
+            const mongoUri = getMongoUri(this._mongoUri);
+            this.client = new MongoClient(mongoUri);
+            this.client.connect()
+            .catch((err) =>
+            {
+                this.close()
+                .finally(() =>
+                {
+                    reject(err);
+                })
+            })
+            .finally(() =>
+            {
+                resolve();
+            });
+        });
+    }
     
     async close()
     {
         return new Promise((resolve, reject) =>
         {
             this.client.close()
-            .then(() =>
-            {
-                resolve();
-            })
             .catch((err) =>
             {
                 reject(err);
+            })
+            .finally(() =>
+            {
+                resolve();
             });
         });
     }
