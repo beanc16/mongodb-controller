@@ -239,7 +239,7 @@ export class MongoDbControllerHelpers
         obj,
         collectionName,
         Model,
-    }: MongoDbControllerHelpersInsertOneParameters): Promise<MongoDbResults>
+    }: MongoDbControllerHelpersInsertOneParameters): Promise<InstanceOfModel>
     {
         return new Promise((resolve, reject) =>
         {

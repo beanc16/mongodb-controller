@@ -171,7 +171,7 @@ export class MongoDbController
      * POSTS
      */
 
-    static async insertOne(obj: Document): Promise<MongoDbResults<typeof this.Model['prototype']>>
+    static async insertOne(obj: Document): Promise<typeof this.Model['prototype']>
     {
         return new Promise((resolve, reject) =>
         {
