@@ -8,17 +8,17 @@
   },
   "license": "MIT",
   "main": "dist/index.js",
-  "types": "dist/types/index.js",
+  "types": "dist/types/index.d.ts",
   "type": "module",
   "scripts": {
     "build": "rm -rf dist && tsc",
+    "build:watch": "rm -rf dist && tsc --watch --preserveWatchOutput",
     "lint": "eslint --ext .ts",
     "test": "",
-    "prepublishOnly": "npm run test && npm run lint",
+    "prepublishOnly": "npm run build && npm run test && npm run lint",
     "preversion": "npm run lint",
     "version": "git add -A src",
-    "postversion": "git push && git push --tags",
-    "publish": "git checkout master && git merge develop master && git push origin master"
+    "postversion": "git push && git push --tags"
   },
   "keywords": [
     "mongodb",
