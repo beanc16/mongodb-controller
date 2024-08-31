@@ -1,25 +1,33 @@
-const { MongoClient } = require("mongodb");
-const {
+import { Collection, Db, Document, MongoClient } from 'mongodb';
+import {
     MongoDbNameNotSetError,
     MongoUriNotSetError,
-} = require("./errors");
+} from './errors/index.js';
 
 
 
-class MongoDbConnection
+interface WithDbName
 {
-    constructor({ dbName, uri })
+    dbName?: string;
+}
+
+export class MongoDbConnection
+{
+    private _mongoUri: string;
+    public client: MongoClient;
+    public dbName: string;
+
+    constructor({ dbName, uri }: { dbName: string; uri: string; })
     {
         const mongoUri = getMongoUri(uri);
         const mongoDbName = getMongoDbName(dbName);
 
         this._mongoUri = mongoUri;
         this.client = new MongoClient(mongoUri);
-        this.collections = [];
         this.dbName = mongoDbName;
     }
 
-    async run({ dbName })
+    private async run({ dbName }: WithDbName): Promise<Db>
     {
         return new Promise((resolve, reject) =>
         {
@@ -30,7 +38,7 @@ class MongoDbConnection
                             ? this.client.db(dbName) 
                             : this.client.db(this.dbName);
 
-                resolve(db, this.client);
+                resolve(db);
             })
             .catch((err) =>
             {
@@ -43,15 +51,15 @@ class MongoDbConnection
         });
     }
     
-    async getCollection({
+    public async getCollection({
         collectionName,
         dbName,
-    })
+    }: WithDbName & { collectionName: string }): Promise<Collection<Document>>
     {
         return new Promise((resolve, reject) =>
         {
             this.run({ dbName })
-            .then((db/*, client*/) =>
+            .then((db) =>
             {
                 const collection = db.collection(collectionName);
                 resolve(collection);
@@ -63,9 +71,9 @@ class MongoDbConnection
         });
     }
 
-    async open()
+    async open(): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        return new Promise<void>((resolve, reject) =>
         {
             const mongoUri = getMongoUri(this._mongoUri);
             this.client = new MongoClient(mongoUri);
@@ -85,9 +93,9 @@ class MongoDbConnection
         });
     }
     
-    async close()
+    async close(): Promise<void>
     {
-        return new Promise((resolve, reject) =>
+        return new Promise<void>((resolve, reject) =>
         {
             this.client.close()
             .catch((err) =>
@@ -105,7 +113,7 @@ class MongoDbConnection
 
 
 // Helpers
-function getMongoUri(uri)
+function getMongoUri(uri: string)
 {
     if (uri)
     {
@@ -120,7 +128,7 @@ function getMongoUri(uri)
     throw new MongoUriNotSetError();
 }
 
-function getMongoDbName(dbName)
+function getMongoDbName(dbName: string)
 {
     if (dbName)
     {
@@ -134,9 +142,3 @@ function getMongoDbName(dbName)
 
     throw new MongoDbNameNotSetError();
 }
-
-
-
-
-
-module.exports = MongoDbConnection;

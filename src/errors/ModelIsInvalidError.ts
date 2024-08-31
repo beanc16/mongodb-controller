@@ -1,12 +1,8 @@
-class ModelIsInvalidError extends Error
+export class ModelIsInvalidError extends Error
 {
-    constructor(modelName)
+    constructor(modelName: string)
     {
         super(`${modelName} is invalid (try checking the casing of parameters)`);
         this.name = "ModelIsInvalidError";
     }
 }
-
-
-
-module.exports = ModelIsInvalidError;

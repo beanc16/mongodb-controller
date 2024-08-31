@@ -7,9 +7,12 @@
     "url": "https://github.com/beanc16"
   },
   "license": "MIT",
-  "main": "src/index.js",
+  "main": "dist/index.js",
+  "types": "dist/types/index.js",
+  "type": "module",
   "scripts": {
-    "lint": "eslint .",
+    "build": "rm -rf dist && tsc",
+    "lint": "eslint --ext .ts",
     "test": "",
     "prepublishOnly": "npm run test && npm run lint",
     "preversion": "npm run lint",
@@ -42,6 +45,8 @@
     "mongodb": "^4.3.1"
   },
   "devDependencies": {
-    "eslint": "^8.8.0"
+    "@types/node": "^20.9.0",
+    "eslint": "^8.8.0",
+    "typescript": "^5.5.4"
   }
 }

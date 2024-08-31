@@ -1,12 +1,8 @@
-class ModelNotSetError extends Error
+export class ModelNotSetError extends Error
 {
-    constructor(controllerName)
+    constructor(controllerName: string)
     {
         super(`${controllerName} must have a static Model set`);
         this.name = "ModelNotSetError";
     }
 }
-
-
-
-module.exports = ModelNotSetError;

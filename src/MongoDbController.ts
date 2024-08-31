@@ -1,21 +1,26 @@
-const MongoDbConnection = require("./MongoDbConnection");
-const MongoDbControllerHelpers = require("./MongoDbControllerHelpers");
+import { Document } from 'mongodb';
+import { MongoDbConnection } from './MongoDbConnection.js';
+import { MongoDbControllerHelpers } from './MongoDbControllerHelpers.js';
+import { MongoDbResults } from './MongoDbResults.js';
+import { FindParams, Model, ProjectionParams, SortOptions } from './types.js';
 
 
 
-class MongoDbController
+export class MongoDbController
 {
     // Static variables
-    static mongoUri;
-    static dbName;
-    static collectionName;
-    static findParams = {};
-    static projectionParams = {};
+    static mongoUri: string;
+    static dbName: string;
+    static collectionName: string;
+    static findParams: FindParams = {};
+    static projectionParams: ProjectionParams = {};
     static aggregateArrayOptions = [];
-    static sortOptions = {};
-    static Model;
-    static _connection = new MongoDbConnection({
+    static sortOptions: SortOptions = {};
+    static Model: Model;
+    private static _connection = new MongoDbConnection({
+        // @ts-ignore -- This should be set on the subclass
         dbName: this.dbName,
+        // @ts-ignore -- This should be set on the subclass
         uri: this.mongoUri,
     });
     static logger = console;
@@ -29,7 +34,7 @@ class MongoDbController
     static async getAll(
         findParams = this.findParams,
         projectionParams = this.projectionParams,
-    )
+    ): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -68,7 +73,7 @@ class MongoDbController
     static async getMostRecent(
         findParams = this.findParams,
         projectionParams = this.projectionParams,
-    )
+    ): Promise<MongoDbResults | undefined>
     {
         return new Promise((resolve, reject) =>
         {
@@ -95,7 +100,7 @@ class MongoDbController
 
                     else if (mongoResults && !mongoResults.results && !mongoResults.error)
                     {
-                        resolve();
+                        resolve(undefined);
                     }
     
                     else
@@ -125,7 +130,7 @@ class MongoDbController
 
     static async aggregate(
         aggregateArrayOptions = this.aggregateArrayOptions,
-    )
+    ): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -166,7 +171,7 @@ class MongoDbController
      * POSTS
      */
 
-    static async insertOne(obj)
+    static async insertOne(obj: Document): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -200,7 +205,7 @@ class MongoDbController
         });
     }
 
-    static async insertOneIfNotExists(findParams = this.findParams, obj)
+    static async insertOneIfNotExists(findParams = this.findParams, obj: Document): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -241,10 +246,10 @@ class MongoDbController
      * PATCHES
      */
 
-    static async findOneAndUpdate(findParams = this.findParams, obj, {
+    static async findOneAndUpdate(findParams = this.findParams, obj: Document, {
         operator = "set",
         arrayFilters = [],
-    } = {})
+    } = {}): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -287,7 +292,7 @@ class MongoDbController
      * DELETES
      */
 
-    static async findOneAndDelete(findParams)
+    static async findOneAndDelete(findParams: FindParams): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -321,9 +326,3 @@ class MongoDbController
         });
     }
 }
-
-
-
-
-
-module.exports = MongoDbController;

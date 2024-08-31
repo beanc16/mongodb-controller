@@ -1,16 +1,65 @@
-const { ObjectId } = require("mongodb");
-const MongoDbResults = require("./MongoDbResults");
-const {
+import { Document, ObjectId, WithId } from 'mongodb';
+import { MongoDbResults } from './MongoDbResults.js';
+import {
     CollectionNameNotSetError,
     EmptyResultError,
     ModelNotSetError,
     ModelIsInvalidError,
-} = require("./errors");
-const DocumentAlreadyExistsError = require("./errors/DocumentAlreadyExistsError");
+} from './errors/index.js';
+import { DocumentAlreadyExistsError } from './errors/DocumentAlreadyExistsError.js';
+import { MongoDbConnection } from './MongoDbConnection.js';
+import { ArrayFilters, FindParams, InstanceOfModel, Model, ProjectionParams, SortOptions } from './types.js';
+import { AggregateArrayOptions } from './types.js';
 
 
 
-class MongoDbControllerHelpers
+interface BaseMongoDbControllerHelpersParameters
+{
+    connection: MongoDbConnection;
+    collectionName: string;
+    Model: Model;
+}
+
+interface MongoDbControllerHelpersQueryResourcesParameters extends BaseMongoDbControllerHelpersParameters
+{
+    findParams: FindParams;
+    projectionParams: ProjectionParams;
+    sortOptions: SortOptions;
+}
+
+interface MongoDbControllerHelpersQueryResourceParameters extends BaseMongoDbControllerHelpersParameters {
+    findParams: FindParams;
+    projectionParams?: ProjectionParams;
+    closeConnectionWhenDone?: boolean;
+}
+
+interface MongoDbControllerHelpersAggregateParameters extends BaseMongoDbControllerHelpersParameters {
+    aggregateArrayOptions: AggregateArrayOptions;
+    sortOptions: SortOptions;
+}
+
+interface MongoDbControllerHelpersInsertOneParameters extends BaseMongoDbControllerHelpersParameters
+{
+    obj: Document;
+}
+
+interface MongoDbControllerHelpersInsertOneIfNotExistsParameters extends MongoDbControllerHelpersInsertOneParameters
+{
+    findParams: FindParams;
+}
+
+interface MongoDbControllerHelpersFindOneAndUpdateParameters extends MongoDbControllerHelpersInsertOneIfNotExistsParameters
+{
+    operator: string; // TODO: Make this an enum later
+    arrayFilters: ArrayFilters;
+}
+
+interface MongoDbControllerHelpersFindOneAndDeleteParameters extends BaseMongoDbControllerHelpersParameters
+{
+    findParams: FindParams;
+}
+
+export class MongoDbControllerHelpers
 {
     /* 
      * GETS
@@ -23,7 +72,7 @@ class MongoDbControllerHelpers
         collectionName,
         sortOptions,
         Model,
-    })
+    }: MongoDbControllerHelpersQueryResourcesParameters): Promise<MongoDbResults>
     {
         return new Promise(function (resolve, reject)
         {
@@ -52,7 +101,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -69,7 +118,7 @@ class MongoDbControllerHelpers
         collectionName,
         Model,
         closeConnectionWhenDone = true,
-    })
+    }: MongoDbControllerHelpersQueryResourceParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -101,7 +150,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -120,7 +169,7 @@ class MongoDbControllerHelpers
         collectionName,
         sortOptions,
         Model,
-    })
+    }: MongoDbControllerHelpersAggregateParameters): Promise<MongoDbResults>
     {
         return new Promise(function (resolve, reject)
         {
@@ -151,7 +200,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -161,9 +210,9 @@ class MongoDbControllerHelpers
         });
     }
 
-    static getAsModels(array, Model)
+    static getAsModels(array: WithId<Document>[] | Document[], Model: Model): InstanceOfModel[]
     {
-        const models = [];
+        const models: InstanceOfModel[] = [];
 
         for (let i = 0; i < array.length; i++)
         {
@@ -174,7 +223,7 @@ class MongoDbControllerHelpers
         return models;
     }
 
-    static getAsModel(document, Model)
+    static getAsModel(document: WithId<Document> | Document, Model: Model): InstanceOfModel
     {
         return new Model(document);
     }
@@ -190,7 +239,7 @@ class MongoDbControllerHelpers
         obj,
         collectionName,
         Model,
-    })
+    }: MongoDbControllerHelpersInsertOneParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -218,7 +267,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -234,7 +283,7 @@ class MongoDbControllerHelpers
         obj,
         collectionName,
         Model,
-    })
+    }: MongoDbControllerHelpersInsertOneIfNotExistsParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -313,7 +362,7 @@ class MongoDbControllerHelpers
         arrayFilters,
         collectionName,
         Model,
-    })
+    }: MongoDbControllerHelpersFindOneAndUpdateParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -332,14 +381,14 @@ class MongoDbControllerHelpers
                     const oldModelResponse = await MongoDbControllerHelpers.queryResource({
                         connection,
                         findParams,
-                        //projectionParams,
+                        // projectionParams,
                         collectionName,
                         Model,
                         closeConnectionWhenDone: false,
                     });
 
                     // What to do with the given object
-                    const operationOnObj = {};
+                    const operationOnObj: Record<string, FindParams> = {};
                     operationOnObj[`$${operator}`] = obj;
 
                     // Update (replace the given values for the obj)
@@ -373,7 +422,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -394,7 +443,7 @@ class MongoDbControllerHelpers
         findParams,
         collectionName,
         Model,
-    })
+    }: MongoDbControllerHelpersFindOneAndDeleteParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
@@ -421,7 +470,7 @@ class MongoDbControllerHelpers
             })
             .catch((err) =>
             {
-                const errResults = new MongoDbResults({ error: err, status: 500 });
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
                 reject(errResults);
             })
             .finally(async () =>
@@ -441,7 +490,11 @@ class MongoDbControllerHelpers
         collectionName,
         Model,
         controllerName,
-    })
+    }: {
+        collectionName: string;
+        Model: Model;
+        controllerName: string;
+    }): Promise<boolean>
     {
         return new Promise((resolve, reject) =>
         {
@@ -470,7 +523,7 @@ class MongoDbControllerHelpers
         });
     }
 
-    static convertIdToObjectId(findParams)
+    static convertIdToObjectId(findParams: FindParams): FindParams
     {
         if (findParams && findParams._id)
         {
@@ -486,14 +539,11 @@ class MongoDbControllerHelpers
         return findParams;
     }
 
-    static addFieldsFromOneModelToOther({ to, from })
+    static addFieldsFromOneModelToOther<ModelToMap = Model>({ to, from }: {
+        to: ModelToMap;
+        from: ModelToMap;
+    })
     {
         return Object.assign({}, from, to);
     }
 }
-
-
-
-
-
-module.exports = MongoDbControllerHelpers;

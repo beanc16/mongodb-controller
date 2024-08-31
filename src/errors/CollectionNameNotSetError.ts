@@ -1,12 +1,8 @@
-class CollectionNameNotSetError extends Error
+export class CollectionNameNotSetError extends Error
 {
-    constructor(controllerName)
+    constructor(controllerName: string)
     {
         super(`${controllerName} must have a static collectionName set`);
         this.name = "CollectionNameNotSetError";
     }
 }
-
-
-
-module.exports = CollectionNameNotSetError;

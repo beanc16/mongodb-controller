@@ -1,16 +1,10 @@
-const MongoDbController = require("../MongoDbController");
+import { MongoDbController } from '../MongoDbController.js';
 
 
 
-class MongoDbControllerWithEnv extends MongoDbController
+export class MongoDbControllerWithEnv extends MongoDbController
 {
     static findParams = (process && process.env && process.env.STAGE)
                         ? { env: process.env.STAGE }
                         : MongoDbController.findParams;
 }
-
-
-
-
-
-module.exports = MongoDbControllerWithEnv;

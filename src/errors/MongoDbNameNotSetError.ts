@@ -3,7 +3,7 @@ MongoController.dbName must be set`;
 
 
 
-class MongoDbNameNotSetError extends Error
+export class MongoDbNameNotSetError extends Error
 {
     constructor()
     {
@@ -11,7 +11,3 @@ class MongoDbNameNotSetError extends Error
         this.name = "MongoDbNameNotSetError";
     }
 }
-
-
-
-module.exports = MongoDbNameNotSetError;

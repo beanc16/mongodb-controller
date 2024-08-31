@@ -1,9 +1,19 @@
-class MongoDbResults
+import { InstanceOfModel } from './types.js';
+
+export class MongoDbResults
 {
+    public results: InstanceOfModel[] | InstanceOfModel | null;
+    public error: Error | null;
+    public statusCode?: number;
+
     constructor({
         results = null,
         error = null,
         statusCode,
+    }: {
+        results?: InstanceOfModel[] | InstanceOfModel | null;
+        error?: Error | null;
+        statusCode?: number;
     } = {})
     {
         this.results = results;
@@ -19,10 +29,8 @@ class MongoDbResults
             this.statusCode = 200;
         }
     }
-    
-    
-    
-    wasSuccessful()
+
+    wasSuccessful(): boolean
     {
         if (this.results !== null || this.statusCode === 200)
         {
@@ -32,9 +40,3 @@ class MongoDbResults
         return false;
     }
 }
-
-
-
-
-
-module.exports = MongoDbResults;

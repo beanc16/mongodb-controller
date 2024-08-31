@@ -3,7 +3,7 @@ MongoController.mongoUri must be set`;
 
 
 
-class MongoUriNotSetError extends Error
+export class MongoUriNotSetError extends Error
 {
     constructor()
     {
@@ -11,7 +11,3 @@ class MongoUriNotSetError extends Error
         this.name = "MongoUriNotSetError";
     }
 }
-
-
-
-module.exports = MongoUriNotSetError;
