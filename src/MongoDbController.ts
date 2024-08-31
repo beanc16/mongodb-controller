@@ -34,7 +34,7 @@ export class MongoDbController
     static async getAll(
         findParams = this.findParams,
         projectionParams = this.projectionParams,
-    ): Promise<MongoDbResults>
+    ): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
@@ -73,7 +73,7 @@ export class MongoDbController
     static async getMostRecent(
         findParams = this.findParams,
         projectionParams = this.projectionParams,
-    ): Promise<MongoDbResults | undefined>
+    ): Promise<MongoDbResults<typeof this.Model['prototype']> | undefined>
     {
         return new Promise((resolve, reject) =>
         {
@@ -130,7 +130,7 @@ export class MongoDbController
 
     static async aggregate(
         aggregateArrayOptions = this.aggregateArrayOptions,
-    ): Promise<MongoDbResults>
+    ): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
@@ -171,7 +171,7 @@ export class MongoDbController
      * POSTS
      */
 
-    static async insertOne(obj: Document): Promise<MongoDbResults>
+    static async insertOne(obj: Document): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
@@ -205,7 +205,7 @@ export class MongoDbController
         });
     }
 
-    static async insertOneIfNotExists(findParams = this.findParams, obj: Document): Promise<MongoDbResults>
+    static async insertOneIfNotExists(findParams = this.findParams, obj: Document): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
@@ -249,7 +249,7 @@ export class MongoDbController
     static async findOneAndUpdate(findParams = this.findParams, obj: Document, {
         operator = "set",
         arrayFilters = [],
-    } = {}): Promise<MongoDbResults>
+    } = {}): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
@@ -292,7 +292,7 @@ export class MongoDbController
      * DELETES
      */
 
-    static async findOneAndDelete(findParams: FindParams): Promise<MongoDbResults>
+    static async findOneAndDelete(findParams: FindParams): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {

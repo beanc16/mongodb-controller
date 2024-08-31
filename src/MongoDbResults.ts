@@ -1,8 +1,8 @@
 import { InstanceOfModel } from './types.js';
 
-export class MongoDbResults
+export class MongoDbResults<Instance extends InstanceOfModel = InstanceOfModel>
 {
-    public results: InstanceOfModel[] | InstanceOfModel | null;
+    public results: Instance[] | Instance | null;
     public error: Error | null;
     public statusCode?: number;
 
@@ -11,7 +11,7 @@ export class MongoDbResults
         error = null,
         statusCode,
     }: {
-        results?: InstanceOfModel[] | InstanceOfModel | null;
+        results?: Instance[] | Instance | null;
         error?: Error | null;
         statusCode?: number;
     } = {})
