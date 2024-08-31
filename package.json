@@ -39,7 +39,7 @@
   },
   "homepage": "https://github.com/beanc16/mongodb-controller#readme",
   "files": [
-    "src/**/*"
+    "dist/**/*"
   ],
   "dependencies": {
     "mongodb": "^4.3.1"
