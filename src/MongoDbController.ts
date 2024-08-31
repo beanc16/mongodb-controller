@@ -2,7 +2,7 @@ import { Document } from 'mongodb';
 import { MongoDbConnection } from './MongoDbConnection.js';
 import { MongoDbControllerHelpers } from './MongoDbControllerHelpers.js';
 import { MongoDbResults } from './MongoDbResults.js';
-import { FindParams, Model, ProjectionParams, SortOptions } from './types.js';
+import { AggregateArrayOptions, FindParams, Model, ProjectionParams, SortOptions } from './types.js';
 
 
 
@@ -14,7 +14,7 @@ export class MongoDbController
     static collectionName: string;
     static findParams: FindParams = {};
     static projectionParams: ProjectionParams = {};
-    static aggregateArrayOptions = [];
+    static aggregateArrayOptions: AggregateArrayOptions = [];
     static sortOptions: SortOptions = {};
     static Model: Model;
     private static _connection = new MongoDbConnection({
