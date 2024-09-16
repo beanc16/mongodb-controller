@@ -530,19 +530,16 @@ export class MongoDbControllerHelpers
                 }).filter((parameter) => parameter !== undefined);
 
                 // Run bulk db operations
-                const {
-                    getInsertedIds,
-                    getUpsertedIds,
-                } = await collection.bulkWrite(parameters);
+                const result = await collection.bulkWrite(parameters);
 
-                // Set post-lookup ids
-                const postLookupInsertedIds: ObjectId[] = getInsertedIds().map(({ insertedId }) => insertedId);
-                const postLookupUpsertedIds: ObjectId[] = getUpsertedIds().map(({ upsertedId }) => upsertedId);
+                // Set post-write ids
+                const postWriteInsertedIds: ObjectId[] = result.getInsertedIds().map(({ _id }) => _id);
+                const postWriteUpsertedIds: ObjectId[] = result.getUpsertedIds().map(({ _id }) => _id);
 
-                // Set post-lookup parameters
-                const postLookupFindParams = [
-                    ...postLookupInsertedIds,
-                    ...postLookupUpsertedIds,
+                // Set post-write parameters
+                const postWriteFindParams = [
+                    ...postWriteInsertedIds,
+                    ...postWriteUpsertedIds,
                 ].reduce<{
                     "$or": {
                         _id: ObjectId,
@@ -557,18 +554,15 @@ export class MongoDbControllerHelpers
                 });
 
                 // Query for post-operation results
-                const results = await MongoDbControllerHelpers.queryResources({
-                    connection,
-                    collectionName,
-                    Model,
-                    findParams: postLookupFindParams,
-                    sortOptions: {},
-                    projectionParams: {},
-                });
+                const postWriteResults = await collection.find(postWriteFindParams);
+                const array = await postWriteResults.toArray();
+
+                // Parse array into an array of models
+                const models = MongoDbControllerHelpers.getAsModels(array, Model);
 
                 // Initialize results
                 const mongoResults = new MongoDbResults({
-                    results,
+                    results: models,
                 });
                 resolve(mongoResults);
             })
