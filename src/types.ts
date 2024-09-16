@@ -66,7 +66,6 @@ export interface MongoDbControllerHelpersFindOneAndUpdateParameters extends Mong
 {
     operator: Operator;
     arrayFilters: ArrayFilters;
-    shouldUpsert?: boolean;
 }
 
 export interface MongoDbControllerHelpersFindOneAndDeleteParameters extends BaseMongoDbControllerHelpersParameters

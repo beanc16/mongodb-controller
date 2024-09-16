@@ -327,7 +327,6 @@ export class MongoDbControllerHelpers
         arrayFilters,
         collectionName,
         Model,
-        shouldUpsert,
     }: MongoDbControllerHelpersFindOneAndUpdateParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
@@ -361,7 +360,6 @@ export class MongoDbControllerHelpers
                     const result = await collection.findOneAndUpdate(findParams, operationOnObj, {
                         arrayFilters,
                         returnDocument: "after",    // Get the updated version of the document
-                        upsert: shouldUpsert,
                     });
 
                     // Failed query (only happens in findOne)
@@ -510,7 +508,6 @@ export class MongoDbControllerHelpers
                                             [`$${operation.operator}`]: operation.obj,
                                         },
                                         arrayFilters: operation.arrayFilters,
-                                        upsert: operation.shouldUpsert,
                                     },
                                 };
                             }

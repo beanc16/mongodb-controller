@@ -349,17 +349,10 @@ export class MongoDbController
     static async bulkWrite({
         inserts = [],
         updates = [],
-        upserts = [],
         deletes = [],
     }: {
         inserts?: Document[];
         updates?: {
-            findParams?: FindParams;
-            obj: Document;
-            arrayFilters?: ArrayFilters;
-            operator?: Operator;
-        }[];
-        upserts?: {
             findParams?: FindParams;
             obj: Document;
             arrayFilters?: ArrayFilters;
@@ -402,24 +395,6 @@ export class MongoDbController
                         arrayFilters,
                         obj,
                         operator,
-                        shouldUpsert: false,
-                    };
-                });
-                const upsertParams = upserts.map<MongoDbControllerHelpersBulkUpdateParameters>(({
-                    arrayFilters = [],
-                    findParams = this.findParams,
-                    obj,
-                    operator = 'set',
-                }) =>
-                {
-                    return {
-                        type: 'update',
-                        Model: this.Model,
-                        findParams,
-                        arrayFilters,
-                        obj,
-                        operator,
-                        shouldUpsert: true,
                     };
                 });
                 const deleteParams = deletes.map<MongoDbControllerHelpersBulkDeleteParameters>(({
@@ -439,7 +414,6 @@ export class MongoDbController
                     operations: [
                         ...insertParams,
                         ...updateParams,
-                        ...upsertParams,
                         ...deleteParams,
                     ],
                 })
