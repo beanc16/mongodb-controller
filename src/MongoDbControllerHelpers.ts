@@ -1,4 +1,4 @@
-import { Document, ObjectId, WithId } from 'mongodb';
+import { AnyBulkWriteOperation, Document, ObjectId, WithId } from 'mongodb';
 import { MongoDbResults } from './MongoDbResults.js';
 import {
     CollectionNameNotSetError,
@@ -7,57 +7,22 @@ import {
     ModelIsInvalidError,
 } from './errors/index.js';
 import { DocumentAlreadyExistsError } from './errors/DocumentAlreadyExistsError.js';
-import { MongoDbConnection } from './MongoDbConnection.js';
-import { ArrayFilters, FindParams, InstanceOfModel, Model, ProjectionParams, SortOptions } from './types.js';
-import { AggregateArrayOptions } from './types.js';
+import {
+    FindParams,
+    InstanceOfModel,
+    Model,
+    MongoDbControllerHelpersAggregateParameters,
+    MongoDbControllerHelpersBulkWriteParameters,
+    MongoDbControllerHelpersFindOneAndDeleteParameters,
+    MongoDbControllerHelpersFindOneAndUpdateParameters,
+    MongoDbControllerHelpersInsertOneIfNotExistsParameters,
+    MongoDbControllerHelpersInsertOneParameters,
+    MongoDbControllerHelpersQueryResourceParameters,
+    MongoDbControllerHelpersQueryResourcesParameters,
+    WithErrors,
+} from './types.js';
 
 
-
-interface BaseMongoDbControllerHelpersParameters
-{
-    connection: MongoDbConnection;
-    collectionName: string;
-    Model: Model;
-}
-
-interface MongoDbControllerHelpersQueryResourcesParameters extends BaseMongoDbControllerHelpersParameters
-{
-    findParams: FindParams;
-    projectionParams: ProjectionParams;
-    sortOptions: SortOptions;
-}
-
-interface MongoDbControllerHelpersQueryResourceParameters extends BaseMongoDbControllerHelpersParameters {
-    findParams: FindParams;
-    projectionParams?: ProjectionParams;
-    closeConnectionWhenDone?: boolean;
-}
-
-interface MongoDbControllerHelpersAggregateParameters extends BaseMongoDbControllerHelpersParameters {
-    aggregateArrayOptions: AggregateArrayOptions;
-    sortOptions: SortOptions;
-}
-
-interface MongoDbControllerHelpersInsertOneParameters extends BaseMongoDbControllerHelpersParameters
-{
-    obj: Document;
-}
-
-interface MongoDbControllerHelpersInsertOneIfNotExistsParameters extends MongoDbControllerHelpersInsertOneParameters
-{
-    findParams: FindParams;
-}
-
-interface MongoDbControllerHelpersFindOneAndUpdateParameters extends MongoDbControllerHelpersInsertOneIfNotExistsParameters
-{
-    operator: string; // TODO: Make this an enum later
-    arrayFilters: ArrayFilters;
-}
-
-interface MongoDbControllerHelpersFindOneAndDeleteParameters extends BaseMongoDbControllerHelpersParameters
-{
-    findParams: FindParams;
-}
 
 export class MongoDbControllerHelpers
 {
@@ -362,6 +327,7 @@ export class MongoDbControllerHelpers
         arrayFilters,
         collectionName,
         Model,
+        shouldUpsert,
     }: MongoDbControllerHelpersFindOneAndUpdateParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
@@ -395,6 +361,7 @@ export class MongoDbControllerHelpers
                     const result = await collection.findOneAndUpdate(findParams, operationOnObj, {
                         arrayFilters,
                         returnDocument: "after",    // Get the updated version of the document
+                        upsert: shouldUpsert,
                     });
 
                     // Failed query (only happens in findOne)
@@ -466,6 +433,146 @@ export class MongoDbControllerHelpers
                 
                 // Initialize results
                 const mongoResults = new MongoDbResults({ results: model });
+                resolve(mongoResults);
+            })
+            .catch((err) =>
+            {
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
+                reject(errResults);
+            })
+            .finally(async () =>
+            {
+                await connection.close();
+            });
+        });
+    }
+
+
+
+    /* 
+     * MULTI-OPERATION
+     */
+
+    static async bulkWrite({
+        connection,
+        collectionName,
+        operations,
+    }: MongoDbControllerHelpersBulkWriteParameters): Promise<MongoDbResults>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            const [{ Model }] = operations;
+
+            connection.getCollection({ collectionName })
+            .then(async (collection) =>
+            {
+                // Data setup
+                const failedOperations: (MongoDbControllerHelpersBulkWriteParameters['operations'][0] & WithErrors)[] = [];
+
+                // Type guard doesn't work in reduce for some reason, so .filter later
+                const parameters = operations.map<AnyBulkWriteOperation<Document> | undefined>((operation) => {
+                    let findParams: FindParams;
+                    let validationModel: InstanceOfModel;
+
+                    switch (operation.type)
+                    {
+                        case 'insert':
+                            validationModel = MongoDbControllerHelpers.getAsModel(operation.obj, operation.Model);
+
+                            // Validation is successful or there is no validation
+                            if (!validationModel.isValid || validationModel.isValid())
+                            {
+                                return {
+                                    insertOne: {
+                                        document: operation.obj,
+                                    },
+                                };
+                            }
+
+                            failedOperations.push({
+                                ...operation,
+                                errors: [
+                                    new ModelIsInvalidError(operation.Model.name),
+                                ],
+                            });
+                            return undefined;
+                        case 'update':
+                            findParams = MongoDbControllerHelpers.convertIdToObjectId(operation.findParams);
+                            validationModel = MongoDbControllerHelpers.getAsModel(operation.obj, operation.Model);
+
+                            // Validation is successful or there is no validation
+                            if (!validationModel.isValid || validationModel.isValid())
+                            {
+                                return {
+                                    updateOne: {
+                                        filter: findParams,
+                                        update: {
+                                            [`$${operation.operator}`]: operation.obj,
+                                        },
+                                        arrayFilters: operation.arrayFilters,
+                                        upsert: operation.shouldUpsert,
+                                    },
+                                };
+                            }
+
+                            failedOperations.push({
+                                ...operation,
+                                errors: [
+                                    new ModelIsInvalidError(operation.Model.name),
+                                ],
+                            });
+                            return undefined;
+                        case 'delete':
+                            findParams = MongoDbControllerHelpers.convertIdToObjectId(operation.findParams);
+                            return {
+                                deleteOne: {
+                                    filter: findParams,
+                                },
+                            };
+                    }
+                }).filter((parameter) => parameter !== undefined);
+
+                // Run bulk db operations
+                const {
+                    getInsertedIds,
+                    getUpsertedIds,
+                } = await collection.bulkWrite(parameters);
+
+                // Set post-lookup ids
+                const postLookupInsertedIds: ObjectId[] = getInsertedIds().map(({ insertedId }) => insertedId);
+                const postLookupUpsertedIds: ObjectId[] = getUpsertedIds().map(({ upsertedId }) => upsertedId);
+
+                // Set post-lookup parameters
+                const postLookupFindParams = [
+                    ...postLookupInsertedIds,
+                    ...postLookupUpsertedIds,
+                ].reduce<{
+                    "$or": {
+                        _id: ObjectId,
+                    }[],
+                }>((acc, id) => {
+                    acc['$or'].push({
+                        _id: id,
+                    });
+                    return acc;
+                }, {
+                    "$or": [],
+                });
+
+                // Query for post-operation results
+                const results = await MongoDbControllerHelpers.queryResources({
+                    connection,
+                    collectionName,
+                    Model,
+                    findParams: postLookupFindParams,
+                    sortOptions: {},
+                    projectionParams: {},
+                });
+
+                // Initialize results
+                const mongoResults = new MongoDbResults({
+                    results,
+                });
                 resolve(mongoResults);
             })
             .catch((err) =>

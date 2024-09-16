@@ -2,7 +2,18 @@ import { Document } from 'mongodb';
 import { MongoDbConnection } from './MongoDbConnection.js';
 import { MongoDbControllerHelpers } from './MongoDbControllerHelpers.js';
 import { MongoDbResults } from './MongoDbResults.js';
-import { AggregateArrayOptions, FindParams, Model, ProjectionParams, SortOptions } from './types.js';
+import {
+    AggregateArrayOptions,
+    ArrayFilters,
+    FindParams,
+    Model,
+    MongoDbControllerHelpersBulkDeleteParameters,
+    MongoDbControllerHelpersBulkInsertParameters,
+    MongoDbControllerHelpersBulkUpdateParameters,
+    Operator,
+    ProjectionParams,
+    SortOptions,
+} from './types.js';
 
 
 
@@ -249,6 +260,9 @@ export class MongoDbController
     static async findOneAndUpdate(findParams = this.findParams, obj: Document, {
         operator = "set",
         arrayFilters = [],
+    }: {
+        operator?: Operator;
+        arrayFilters?: ArrayFilters;
     } = {}): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
@@ -316,6 +330,126 @@ export class MongoDbController
                 .catch((errResults) =>
                 {
                     this.logger.error(`Failed to delete one ${this.Model.name} from database:`, errResults);
+                    reject(errResults);
+                });
+            })
+            .catch((errors) =>
+            {
+                reject(errors);
+            });
+        });
+    }
+
+
+
+    /* 
+     * MULTI-OPERATION
+     */
+
+    static async bulkWrite({
+        inserts = [],
+        updates = [],
+        upserts = [],
+        deletes = [],
+    }: {
+        inserts: Document[];
+        updates: {
+            findParams?: FindParams;
+            obj: Document;
+            arrayFilters: ArrayFilters;
+            operator?: Operator;
+        }[];
+        upserts: {
+            findParams?: FindParams;
+            obj: Document;
+            arrayFilters: ArrayFilters;
+            operator?: Operator;
+        }[];
+        deletes: {
+            findParams?: FindParams;
+        }[];
+    }): Promise<MongoDbResults<typeof this.Model['prototype']>>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            MongoDbControllerHelpers.validateStaticVariables({
+                collectionName: this.collectionName,
+                Model: this.Model,
+                controllerName: this.name,
+            })
+            .then(() =>
+            {
+                // Set up parameters
+                const insertParams = inserts.map<MongoDbControllerHelpersBulkInsertParameters>((obj) =>
+                {
+                    return {
+                        type: 'insert',
+                        Model: this.Model,
+                        obj,
+                    };
+                });
+                const updateParams = updates.map<MongoDbControllerHelpersBulkUpdateParameters>(({
+                    arrayFilters,
+                    findParams = this.findParams,
+                    obj,
+                    operator = 'set',
+                }) =>
+                {
+                    return {
+                        type: 'update',
+                        Model: this.Model,
+                        findParams,
+                        arrayFilters,
+                        obj,
+                        operator,
+                        shouldUpsert: false,
+                    };
+                });
+                const upsertParams = upserts.map<MongoDbControllerHelpersBulkUpdateParameters>(({
+                    arrayFilters,
+                    findParams = this.findParams,
+                    obj,
+                    operator = 'set',
+                }) =>
+                {
+                    return {
+                        type: 'update',
+                        Model: this.Model,
+                        findParams,
+                        arrayFilters,
+                        obj,
+                        operator,
+                        shouldUpsert: true,
+                    };
+                });
+                const deleteParams = deletes.map<MongoDbControllerHelpersBulkDeleteParameters>(({
+                    findParams = this.findParams,
+                }) =>
+                {
+                    return {
+                        type: 'delete',
+                        Model: this.Model,
+                        findParams,
+                    };
+                });
+
+                MongoDbControllerHelpers.bulkWrite({
+                    connection: this._connection,
+                    collectionName: this.collectionName,
+                    operations: [
+                        ...insertParams,
+                        ...updateParams,
+                        ...upsertParams,
+                        ...deleteParams,
+                    ],
+                })
+                .then((results) =>
+                {
+                    resolve(results);
+                })
+                .catch((errResults) =>
+                {
+                    this.logger.error(`Failed to run bulkWrite with ${this.Model.name} in ${this.name}:`, errResults);
                     reject(errResults);
                 });
             })
