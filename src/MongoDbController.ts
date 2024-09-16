@@ -352,20 +352,20 @@ export class MongoDbController
         upserts = [],
         deletes = [],
     }: {
-        inserts: Document[];
-        updates: {
+        inserts?: Document[];
+        updates?: {
             findParams?: FindParams;
             obj: Document;
             arrayFilters?: ArrayFilters;
             operator?: Operator;
         }[];
-        upserts: {
+        upserts?: {
             findParams?: FindParams;
             obj: Document;
             arrayFilters?: ArrayFilters;
             operator?: Operator;
         }[];
-        deletes: {
+        deletes?: {
             findParams?: FindParams;
         }[];
     }): Promise<MongoDbResults<typeof this.Model['prototype']>>
