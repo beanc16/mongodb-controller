@@ -356,13 +356,13 @@ export class MongoDbController
         updates: {
             findParams?: FindParams;
             obj: Document;
-            arrayFilters: ArrayFilters;
+            arrayFilters?: ArrayFilters;
             operator?: Operator;
         }[];
         upserts: {
             findParams?: FindParams;
             obj: Document;
-            arrayFilters: ArrayFilters;
+            arrayFilters?: ArrayFilters;
             operator?: Operator;
         }[];
         deletes: {
@@ -389,7 +389,7 @@ export class MongoDbController
                     };
                 });
                 const updateParams = updates.map<MongoDbControllerHelpersBulkUpdateParameters>(({
-                    arrayFilters,
+                    arrayFilters = [],
                     findParams = this.findParams,
                     obj,
                     operator = 'set',
@@ -406,7 +406,7 @@ export class MongoDbController
                     };
                 });
                 const upsertParams = upserts.map<MongoDbControllerHelpersBulkUpdateParameters>(({
-                    arrayFilters,
+                    arrayFilters = [],
                     findParams = this.findParams,
                     obj,
                     operator = 'set',
