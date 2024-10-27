@@ -1,30 +1,24 @@
 import { Collection, Db, Document, MongoClient } from 'mongodb';
-import {
-    MongoDbNameNotSetError,
-    MongoUriNotSetError,
-} from './errors/index.js';
+import { MongoUriNotSetError } from './errors/index.js';
 
 
 
 interface WithDbName
 {
-    dbName?: string;
+    dbName: string;
 }
 
 export class MongoDbConnection
 {
     private _mongoUri: string;
     public client: MongoClient;
-    public dbName: string;
 
-    constructor({ dbName, uri }: { dbName: string; uri: string; })
+    constructor({ uri }: { uri: string; })
     {
-        const mongoUri = getMongoUri(uri);
-        const mongoDbName = getMongoDbName(dbName);
+        const mongoUri = this.getMongoUri(uri);
 
         this._mongoUri = mongoUri;
         this.client = new MongoClient(mongoUri);
-        this.dbName = mongoDbName;
     }
 
     private async run({ dbName }: WithDbName): Promise<Db>
@@ -34,10 +28,7 @@ export class MongoDbConnection
             this.open()
             .then(() =>
             {
-                const db = (dbName) 
-                            ? this.client.db(dbName) 
-                            : this.client.db(this.dbName);
-
+                const db = this.client.db(dbName);
                 resolve(db);
             })
             .catch((err) =>
@@ -71,11 +62,11 @@ export class MongoDbConnection
         });
     }
 
-    async open(): Promise<void>
+    private async open(): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
-            const mongoUri = getMongoUri(this._mongoUri);
+            const mongoUri = this.getMongoUri(this._mongoUri);
             this.client = new MongoClient(mongoUri);
             this.client.connect()
             .catch((err) =>
@@ -92,8 +83,8 @@ export class MongoDbConnection
             });
         });
     }
-    
-    async close(): Promise<void>
+
+    public async close(): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
@@ -108,37 +99,19 @@ export class MongoDbConnection
             });
         });
     }
-}
 
-
-
-// Helpers
-function getMongoUri(uri: string)
-{
-    if (uri)
+    private getMongoUri(uri: string)
     {
-        return uri;
+        if (uri)
+        {
+            return uri;
+        }
+    
+        else if (process.env && process.env.MONGO_URI)
+        {
+            return process.env.MONGO_URI;
+        }
+    
+        throw new MongoUriNotSetError();
     }
-
-    else if (process.env && process.env.MONGO_URI)
-    {
-        return process.env.MONGO_URI;
-    }
-
-    throw new MongoUriNotSetError();
-}
-
-function getMongoDbName(dbName: string)
-{
-    if (dbName)
-    {
-        return dbName;
-    }
-
-    else if (process.env && process.env.MONGO_DB_NAME)
-    {
-        return process.env.MONGO_DB_NAME;
-    }
-
-    throw new MongoDbNameNotSetError();
 }

@@ -31,6 +31,7 @@ export interface BaseMongoDbControllerHelpersParameters
 {
     connection: MongoDbConnection;
     collectionName: string;
+    dbName: string;
     Model: Model;
 }
 
@@ -74,7 +75,7 @@ export interface MongoDbControllerHelpersFindOneAndDeleteParameters extends Base
 }
 
 // Bulk write
-type TopLevelBulkWriteParams = 'connection' | 'collectionName';
+type TopLevelBulkWriteParams = 'connection' | 'collectionName' | 'dbName';
 export type BulkWriteOperations = 'insert' | 'update' | 'upsert' | 'delete';
 
 export interface MongoDbControllerHelpersBulkInsertParameters extends Omit<MongoDbControllerHelpersInsertOneParameters, TopLevelBulkWriteParams>

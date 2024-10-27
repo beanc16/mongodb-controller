@@ -35,6 +35,7 @@ export class MongoDbControllerHelpers
         findParams,
         projectionParams,
         collectionName,
+        dbName,
         sortOptions,
         Model,
     }: MongoDbControllerHelpersQueryResourcesParameters): Promise<MongoDbResults>
@@ -43,7 +44,7 @@ export class MongoDbControllerHelpers
         {
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 // Make query
@@ -81,6 +82,7 @@ export class MongoDbControllerHelpers
         findParams,
         projectionParams,
         collectionName,
+        dbName,
         Model,
         closeConnectionWhenDone = true,
     }: MongoDbControllerHelpersQueryResourceParameters): Promise<MongoDbResults>
@@ -89,7 +91,7 @@ export class MongoDbControllerHelpers
         {
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 // Make query
@@ -132,13 +134,14 @@ export class MongoDbControllerHelpers
         connection,
         aggregateArrayOptions,
         collectionName,
+        dbName,
         sortOptions,
         Model,
     }: MongoDbControllerHelpersAggregateParameters): Promise<MongoDbResults>
     {
         return new Promise(function (resolve, reject)
         {
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 if (sortOptions && Object.keys(sortOptions).length > 0)
@@ -203,12 +206,13 @@ export class MongoDbControllerHelpers
         connection,
         obj,
         collectionName,
+        dbName,
         Model,
     }: MongoDbControllerHelpersInsertOneParameters): Promise<InstanceOfModel>
     {
         return new Promise((resolve, reject) =>
         {
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
@@ -247,12 +251,13 @@ export class MongoDbControllerHelpers
         findParams,
         obj,
         collectionName,
+        dbName,
         Model,
     }: MongoDbControllerHelpersInsertOneIfNotExistsParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
@@ -326,12 +331,13 @@ export class MongoDbControllerHelpers
         operator,
         arrayFilters,
         collectionName,
+        dbName,
         Model,
     }: MongoDbControllerHelpersFindOneAndUpdateParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
@@ -348,6 +354,7 @@ export class MongoDbControllerHelpers
                         findParams,
                         // projectionParams,
                         collectionName,
+                        dbName,
                         Model,
                         closeConnectionWhenDone: false,
                     });
@@ -407,12 +414,13 @@ export class MongoDbControllerHelpers
         connection,
         findParams,
         collectionName,
+        dbName,
         Model,
     }: MongoDbControllerHelpersFindOneAndDeleteParameters): Promise<MongoDbResults>
     {
         return new Promise((resolve, reject) =>
         {
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
@@ -454,6 +462,7 @@ export class MongoDbControllerHelpers
     static async bulkWrite({
         connection,
         collectionName,
+        dbName,
         operations,
     }: MongoDbControllerHelpersBulkWriteParameters): Promise<MongoDbResults>
     {
@@ -461,7 +470,7 @@ export class MongoDbControllerHelpers
         {
             const [{ Model }] = operations;
 
-            connection.getCollection({ collectionName })
+            connection.getCollection({ collectionName, dbName })
             .then(async (collection) =>
             {
                 // Data setup

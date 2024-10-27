@@ -21,7 +21,7 @@ export class MongoDbController
 {
     // Static variables
     static mongoUri: string;
-    static dbName: string;
+    static dbName: string = process.env.MONGO_DB_NAME as string;
     static collectionName: string;
     static findParams: FindParams = {};
     static projectionParams: ProjectionParams = {};
@@ -29,8 +29,6 @@ export class MongoDbController
     static sortOptions: SortOptions = {};
     static Model: Model;
     private static _connection = new MongoDbConnection({
-        // @ts-ignore -- This should be set on the subclass
-        dbName: this.dbName,
         // @ts-ignore -- This should be set on the subclass
         uri: this.mongoUri,
     });
@@ -61,6 +59,7 @@ export class MongoDbController
                     findParams,
                     projectionParams,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     sortOptions: this.sortOptions,
                     Model: this.Model,
                 })
@@ -100,6 +99,7 @@ export class MongoDbController
                     findParams,
                     projectionParams,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     Model: this.Model,
                 })
                 .then((mongoResults) =>
@@ -156,6 +156,7 @@ export class MongoDbController
                     connection: this._connection,
                     aggregateArrayOptions,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     sortOptions: this.sortOptions,
                     Model: this.Model,
                 })
@@ -197,6 +198,7 @@ export class MongoDbController
                     connection: this._connection,
                     obj,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     Model: this.Model,
                 })
                 .then((model) =>
@@ -232,6 +234,7 @@ export class MongoDbController
                     findParams,
                     obj,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     Model: this.Model,
                 })
                 .then((model) =>
@@ -281,6 +284,7 @@ export class MongoDbController
                     operator,
                     arrayFilters,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     Model: this.Model,
                 })
                 .then((model) =>
@@ -321,6 +325,7 @@ export class MongoDbController
                     connection: this._connection,
                     findParams,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     Model: this.Model,
                 })
                 .then((model) =>
@@ -411,6 +416,7 @@ export class MongoDbController
                 MongoDbControllerHelpers.bulkWrite({
                     connection: this._connection,
                     collectionName: this.collectionName,
+                    dbName: this.dbName,
                     operations: [
                         ...insertParams,
                         ...updateParams,
