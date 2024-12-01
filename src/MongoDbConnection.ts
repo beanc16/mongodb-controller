@@ -1,4 +1,5 @@
 import { Collection, Db, Document, MongoClient } from 'mongodb';
+import { randomUUID, UUID } from 'node:crypto';
 import { MongoUriNotSetError } from './errors/index.js';
 
 
@@ -8,24 +9,39 @@ interface WithDbName
     dbName: string;
 }
 
+interface WithGuid
+{
+    guid: UUID;
+}
+
+interface ConnectionAuditLog extends WithGuid
+{
+    unixTimestamp: number;
+}
+
+// Don't allow connections to stay open for more than 30 seconds
+const MAX_CONNECTION_OPEN_TIME = 30_000;
+
 export class MongoDbConnection
 {
-    private _mongoUri: string;
+    private mongoUri: string;
     public client: MongoClient;
+    private auditLogs: ConnectionAuditLog[];
 
     constructor({ uri }: { uri: string; })
     {
         const mongoUri = this.getMongoUri(uri);
 
-        this._mongoUri = mongoUri;
+        this.mongoUri = mongoUri;
         this.client = new MongoClient(mongoUri);
+        this.auditLogs = [];
     }
 
-    private async run({ dbName }: WithDbName): Promise<Db>
+    private async run({ dbName, guid }: WithDbName & WithGuid): Promise<Db>
     {
         return new Promise((resolve, reject) =>
         {
-            this.open()
+            this.open({ guid })
             .then(() =>
             {
                 const db = this.client.db(dbName);
@@ -33,11 +49,11 @@ export class MongoDbConnection
             })
             .catch((err) =>
             {
-                this.close()
+                this.close({ guid })
                 .finally(() =>
                 {
                     reject(err);
-                })
+                });
             });
         });
     }
@@ -45,15 +61,21 @@ export class MongoDbConnection
     public async getCollection({
         collectionName,
         dbName,
-    }: WithDbName & { collectionName: string }): Promise<Collection<Document>>
+    }: WithDbName & { collectionName: string }): Promise<{
+        collection: Collection<Document>;
+        auditLogGuid: UUID;
+    }>
     {
         return new Promise((resolve, reject) =>
         {
-            this.run({ dbName })
+            const guid = randomUUID();
+            this.auditLogs.push({ guid, unixTimestamp: Date.now() });
+
+            this.run({ dbName, guid })
             .then((db) =>
             {
                 const collection = db.collection(collectionName);
-                resolve(collection);
+                resolve({ collection, auditLogGuid: guid });
             })
             .catch((err) =>
             {
@@ -62,16 +84,16 @@ export class MongoDbConnection
         });
     }
 
-    private async open(): Promise<void>
+    private async open({ guid }: WithGuid): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
-            const mongoUri = this.getMongoUri(this._mongoUri);
+            const mongoUri = this.getMongoUri(this.mongoUri);
             this.client = new MongoClient(mongoUri);
             this.client.connect()
             .catch((err) =>
             {
-                this.close()
+                this.close({ guid })
                 .finally(() =>
                 {
                     reject(err);
@@ -84,19 +106,50 @@ export class MongoDbConnection
         });
     }
 
-    public async close(): Promise<void>
+    public async close({ guid: auditLogGuid }: WithGuid): Promise<void>
     {
         return new Promise<void>((resolve, reject) =>
         {
-            this.client.close()
-            .catch((err) =>
+            // Remove the given audit log
+            const index = this.auditLogs.findIndex(({ guid }) => guid === auditLogGuid);
+            if (index >= 0)
             {
-                reject(err);
-            })
-            .finally(() =>
+                this.auditLogs.splice(index, 1);
+            }
+
+            // Remove any audit logs exceeding the max allowed connection time
+            const indicesToRemove: number[] = [];
+            for (let i = 0; i < this.auditLogs.length; i += 1)
+            {
+                const { unixTimestamp } = this.auditLogs[i];
+                const elaspedTimeInMillis = Date.now() - unixTimestamp;
+
+                if (elaspedTimeInMillis >= MAX_CONNECTION_OPEN_TIME)
+                {
+                    indicesToRemove.push(i);
+                }
+            }
+            indicesToRemove.forEach(i => this.auditLogs.splice(i, 1));
+
+            // There's other operations still happening, so don't close yet
+            if (this.auditLogs.length > 0)
             {
                 resolve();
-            });
+            }
+
+            // There's no other operations happening, so close the connection
+            else
+            {
+                this.client.close()
+                .catch((err) =>
+                {
+                    reject(err);
+                })
+                .finally(() =>
+                {
+                    resolve();
+                });
+            }
         });
     }
 

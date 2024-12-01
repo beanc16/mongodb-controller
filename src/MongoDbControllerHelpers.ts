@@ -1,4 +1,7 @@
+import { UUID } from 'node:crypto';
+
 import { AnyBulkWriteOperation, Document, ObjectId, WithId } from 'mongodb';
+
 import { MongoDbResults } from './MongoDbResults.js';
 import {
     CollectionNameNotSetError,
@@ -44,9 +47,12 @@ export class MongoDbControllerHelpers
         {
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 // Make query
                 const result = await collection.find(findParams, { projection: projectionParams })
                                                 .sort(sortOptions);
@@ -72,7 +78,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -91,9 +97,12 @@ export class MongoDbControllerHelpers
         {
             findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 // Make query
                 const result = await collection.findOne(findParams, { projection: projectionParams });
 
@@ -124,7 +133,7 @@ export class MongoDbControllerHelpers
             {
                 if (closeConnectionWhenDone !== false)
                 {
-                    await connection.close();
+                    await connection.close({ guid });
                 }
             });
         });
@@ -141,9 +150,12 @@ export class MongoDbControllerHelpers
     {
         return new Promise(function (resolve, reject)
         {
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 if (sortOptions && Object.keys(sortOptions).length > 0)
                 {
                     aggregateArrayOptions.push({ "$sort": sortOptions });
@@ -173,7 +185,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -212,9 +224,12 @@ export class MongoDbControllerHelpers
     {
         return new Promise((resolve, reject) =>
         {
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
 
                 // Make query
@@ -241,7 +256,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -257,9 +272,12 @@ export class MongoDbControllerHelpers
     {
         return new Promise((resolve, reject) =>
         {
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 obj = MongoDbControllerHelpers.convertIdToObjectId(obj);
 
                 // Make query
@@ -313,7 +331,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -337,9 +355,12 @@ export class MongoDbControllerHelpers
     {
         return new Promise((resolve, reject) =>
         {
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Make query
@@ -399,7 +420,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -420,9 +441,12 @@ export class MongoDbControllerHelpers
     {
         return new Promise((resolve, reject) =>
         {
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
 
                 // Delete
@@ -448,7 +472,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
@@ -470,9 +494,12 @@ export class MongoDbControllerHelpers
         {
             const [{ Model }] = operations;
 
+            let guid: UUID;
             connection.getCollection({ collectionName, dbName })
-            .then(async (collection) =>
+            .then(async ({ collection, auditLogGuid }) =>
             {
+                guid = auditLogGuid;
+
                 // Data setup
                 const failedOperations: (MongoDbControllerHelpersBulkWriteParameters['operations'][0] & WithErrors)[] = [];
 
@@ -582,7 +609,7 @@ export class MongoDbControllerHelpers
             })
             .finally(async () =>
             {
-                await connection.close();
+                await connection.close({ guid });
             });
         });
     }
