@@ -504,6 +504,7 @@ export class MongoDbControllerHelpers
                 const failedOperations: (MongoDbControllerHelpersBulkWriteParameters['operations'][0] & WithErrors)[] = [];
 
                 // Type guard doesn't work in reduce for some reason, so .filter later
+                const updateFindParams: FindParams[] = [];
                 const parameters = operations.map<AnyBulkWriteOperation<Document> | undefined>((operation) => {
                     let findParams: FindParams;
                     let validationModel: InstanceOfModel;
@@ -537,6 +538,7 @@ export class MongoDbControllerHelpers
                             // Validation is successful or there is no validation
                             if (!validationModel.isValid || validationModel.isValid())
                             {
+                                updateFindParams.push(findParams);
                                 return {
                                     updateOne: {
                                         filter: findParams,
@@ -577,16 +579,16 @@ export class MongoDbControllerHelpers
                     ...postWriteInsertedIds,
                     ...postWriteUpsertedIds,
                 ].reduce<{
-                    "$or": {
+                    "$or": ({
                         _id: ObjectId,
-                    }[],
+                    } | FindParams)[],
                 }>((acc, id) => {
                     acc['$or'].push({
                         _id: id,
                     });
                     return acc;
                 }, {
-                    "$or": [],
+                    "$or": [...updateFindParams],
                 });
 
                 // Query for post-operation results
