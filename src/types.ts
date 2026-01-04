@@ -3,6 +3,10 @@ import { MongoDbConnection } from './MongoDbConnection.js';
 
 export type ArrayFilters = Document[];
 export type AggregateArrayOptions = Document[];
+export interface AggregateParams
+{
+    Model?: Model;
+}
 export type FindParams = Filter<Document>;
 export type ProjectionParams = Document;
 export type SortOptions = Sort;

@@ -4,6 +4,7 @@ import { MongoDbControllerHelpers } from './MongoDbControllerHelpers.js';
 import { MongoDbResults } from './MongoDbResults.js';
 import {
     AggregateArrayOptions,
+    AggregateParams,
     ArrayFilters,
     FindParams,
     Model,
@@ -141,13 +142,15 @@ export class MongoDbController
 
     static async aggregate(
         aggregateArrayOptions = this.aggregateArrayOptions,
+        aggregateOptions: AggregateParams = {},
     ): Promise<MongoDbResults<typeof this.Model['prototype']>>
     {
         return new Promise((resolve, reject) =>
         {
+            const Model = aggregateOptions?.Model || this.Model;
             MongoDbControllerHelpers.validateStaticVariables({
                 collectionName: this.collectionName,
-                Model: this.Model,
+                Model,
                 controllerName: this.name,
             })
             .then(() =>
@@ -158,7 +161,7 @@ export class MongoDbController
                     collectionName: this.collectionName,
                     dbName: this.dbName,
                     sortOptions: this.sortOptions,
-                    Model: this.Model,
+                    Model,
                 })
                 .then((mongoResults) =>
                 {
