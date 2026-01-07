@@ -24,16 +24,15 @@ const MAX_CONNECTION_OPEN_TIME = 30_000;
 
 export class MongoDbConnection
 {
-    private mongoUri: string;
     public client: MongoClient;
     private auditLogs: ConnectionAuditLog[];
+    private connectPromise: Promise<void> | null = null;  // Track connection state
 
     constructor({ uri }: { uri: string; })
     {
         const mongoUri = this.getMongoUri(uri);
 
-        this.mongoUri = mongoUri;
-        this.client = new MongoClient(mongoUri);
+        this.client = new MongoClient(mongoUri); // Create only once
         this.auditLogs = [];
     }
 
@@ -86,13 +85,18 @@ export class MongoDbConnection
 
     private async open({ guid }: WithGuid): Promise<void>
     {
-        return new Promise<void>((resolve, reject) =>
+        // If already connecting/connected, reuse that connection
+        if (this.connectPromise)
         {
-            const mongoUri = this.getMongoUri(this.mongoUri);
-            this.client = new MongoClient(mongoUri);
+            return this.connectPromise;
+        }
+
+        this.connectPromise = new Promise<void>((resolve, reject) =>
+        {
             this.client.connect()
             .catch((err) =>
             {
+                this.connectPromise = null; // Reset on error
                 this.close({ guid })
                 .finally(() =>
                 {
@@ -104,6 +108,8 @@ export class MongoDbConnection
                 resolve();
             });
         });
+
+        return this.connectPromise;
     }
 
     public async close({ guid: auditLogGuid }: WithGuid): Promise<void>
@@ -147,6 +153,7 @@ export class MongoDbConnection
                 })
                 .finally(() =>
                 {
+                    this.connectPromise = null;  // Reset so next open() will reconnect
                     resolve();
                 });
             }
@@ -159,12 +166,12 @@ export class MongoDbConnection
         {
             return uri;
         }
-    
+
         else if (process.env && process.env.MONGO_URI)
         {
             return process.env.MONGO_URI;
         }
-    
+
         throw new MongoUriNotSetError();
     }
 }
