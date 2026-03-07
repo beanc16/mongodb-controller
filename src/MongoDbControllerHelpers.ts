@@ -16,6 +16,7 @@ import {
     Model,
     MongoDbControllerHelpersAggregateParameters,
     MongoDbControllerHelpersBulkWriteParameters,
+    MongoDbControllerHelpersCountParameters,
     MongoDbControllerHelpersFindOneAndDeleteParameters,
     MongoDbControllerHelpersFindOneAndUpdateParameters,
     MongoDbControllerHelpersInsertOneIfNotExistsParameters,
@@ -138,7 +139,44 @@ export class MongoDbControllerHelpers
             });
         });
     }
-    
+
+    static async count({
+        connection,
+        findParams,
+        collectionName,
+        dbName,
+        closeConnectionWhenDone = true,
+    }: MongoDbControllerHelpersCountParameters): Promise<number>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
+
+            let guid: UUID;
+            connection.getCollection({ collectionName, dbName })
+            .then(async ({ collection, auditLogGuid }) =>
+            {
+                guid = auditLogGuid;
+
+                // Make query
+                const result = await collection.count(findParams);
+                resolve(result);
+            })
+            .catch((err) =>
+            {
+                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
+                reject(errResults);
+            })
+            .finally(async () =>
+            {
+                if (closeConnectionWhenDone !== false)
+                {
+                    await connection.close({ guid });
+                }
+            });
+        });
+    }
+
     static async aggregate({
         connection,
         aggregateArrayOptions,

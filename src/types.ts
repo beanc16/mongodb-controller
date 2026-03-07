@@ -52,6 +52,11 @@ export interface MongoDbControllerHelpersQueryResourceParameters extends BaseMon
     closeConnectionWhenDone?: boolean;
 }
 
+export interface MongoDbControllerHelpersCountParameters extends Omit<BaseMongoDbControllerHelpersParameters, 'Model'> {
+    findParams: FindParams;
+    closeConnectionWhenDone?: boolean;
+}
+
 export interface MongoDbControllerHelpersAggregateParameters extends BaseMongoDbControllerHelpersParameters {
     aggregateArrayOptions: AggregateArrayOptions;
     sortOptions: SortOptions;

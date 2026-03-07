@@ -180,6 +180,40 @@ export class MongoDbController
         });
     }
 
+    static async count(findParams = this.findParams): Promise<number>
+    {
+        return new Promise((resolve, reject) =>
+        {
+            MongoDbControllerHelpers.validateStaticVariables({
+                collectionName: this.collectionName,
+                Model: this.Model,
+                controllerName: this.name,
+            })
+            .then(() =>
+            {
+                MongoDbControllerHelpers.count({
+                    connection: this._connection,
+                    findParams,
+                    collectionName: this.collectionName,
+                    dbName: this.dbName,
+                })
+                .then((result) =>
+                {
+                    resolve(result);
+                })
+                .catch((errResults) =>
+                {
+                    this.logger.error("Failed to count resources in database:", errResults);
+                    reject(errResults);
+                });
+            })
+            .catch((errors) =>
+            {
+                reject(errors);
+            });
+        });
+    }
+
 
 
     /* 
