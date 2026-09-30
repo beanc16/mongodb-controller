@@ -29,11 +29,22 @@ export class MongoDbController
     static aggregateArrayOptions: AggregateArrayOptions = [];
     static sortOptions: SortOptions = {};
     static Model: Model;
-    private static _connection = new MongoDbConnection({
-        // @ts-ignore -- This should be set on the subclass
-        uri: this.mongoUri,
-    });
     static logger = console;
+
+    // Per-class connection
+    private static _connectionInstance: MongoDbConnection | null = null;
+
+    protected static get _connection(): MongoDbConnection
+    {
+        if (!this._connectionInstance)
+        {
+            this._connectionInstance = new MongoDbConnection({
+                uri: this.mongoUri,
+            });
+        }
+
+        return this._connectionInstance;
+    }
 
 
 

@@ -136,6 +136,10 @@ export class MongoDbControllerHelpers
                 {
                     await connection.close({ guid });
                 }
+                else
+                {
+                    connection.removeAuditLog(guid);
+                }
             });
         });
     }
@@ -391,36 +395,37 @@ export class MongoDbControllerHelpers
         Model,
     }: MongoDbControllerHelpersFindOneAndUpdateParameters): Promise<MongoDbResults>
     {
-        return new Promise((resolve, reject) =>
+        return new Promise(async (resolve, reject) =>
         {
-            let guid: UUID;
-            connection.getCollection({ collectionName, dbName })
-            .then(async ({ collection, auditLogGuid }) =>
+            findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
+
+            // Make query
+            const validationModel = MongoDbControllerHelpers.getAsModel(obj, Model);
+
+            // Validation is successful or there is no validation
+            if (!validationModel.isValid || validationModel.isValid())
             {
-                guid = auditLogGuid;
+                // Get the pre-update version of the Model
+                const oldModelResponse = await MongoDbControllerHelpers.queryResource({
+                    connection,
+                    findParams,
+                    // projectionParams,
+                    collectionName,
+                    dbName,
+                    Model,
+                    closeConnectionWhenDone: true,
+                });
 
-                findParams = MongoDbControllerHelpers.convertIdToObjectId(findParams);
+                // What to do with the given object
+                const operationOnObj: Record<string, FindParams> = {};
+                operationOnObj[`$${operator}`] = obj;
 
-                // Make query
-                const validationModel = MongoDbControllerHelpers.getAsModel(obj, Model);
-
-                // Validation is successful or there is no validation
-                if (!validationModel.isValid || validationModel.isValid())
+                // Re-acquire collection handle inside this active session
+                let guid: UUID;
+                connection.getCollection({ collectionName, dbName })
+                .then(async ({ collection, auditLogGuid }) =>
                 {
-                    // Get the pre-update version of the Model
-                    const oldModelResponse = await MongoDbControllerHelpers.queryResource({
-                        connection,
-                        findParams,
-                        // projectionParams,
-                        collectionName,
-                        dbName,
-                        Model,
-                        closeConnectionWhenDone: false,
-                    });
-
-                    // What to do with the given object
-                    const operationOnObj: Record<string, FindParams> = {};
-                    operationOnObj[`$${operator}`] = obj;
+                    guid = auditLogGuid;
 
                     // Update (replace the given values for the obj)
                     const result = await collection.findOneAndUpdate(findParams, operationOnObj, {
@@ -445,21 +450,21 @@ export class MongoDbControllerHelpers
                         } 
                     });
                     resolve(mongoResults);
-                }
-                else
+                })
+                .catch((err) =>
                 {
-                    throw new ModelIsInvalidError(Model.name);
-                }
-            })
-            .catch((err) =>
+                    const errResults = new MongoDbResults({ error: err, statusCode: 500 });
+                    reject(errResults);
+                })
+                .finally(async () =>
+                {
+                    await connection.close({ guid });
+                });
+            }
+            else
             {
-                const errResults = new MongoDbResults({ error: err, statusCode: 500 });
-                reject(errResults);
-            })
-            .finally(async () =>
-            {
-                await connection.close({ guid });
-            });
+                throw new ModelIsInvalidError(Model.name);
+            }
         });
     }
 

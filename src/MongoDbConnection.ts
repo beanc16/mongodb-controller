@@ -40,7 +40,7 @@ export class MongoDbConnection
     {
         return new Promise((resolve, reject) =>
         {
-            this.open({ guid })
+            this.open()
             .then(() =>
             {
                 const db = this.client.db(dbName);
@@ -83,30 +83,35 @@ export class MongoDbConnection
         });
     }
 
-    private async open({ guid }: WithGuid): Promise<void>
+    private async open(): Promise<void>
     {
+        // Check if client is actually connected before reusing connectPromise
+        const isConnected = this.client && (this.client as any).topology?.isConnected();
+
+        // Stale or closed connection state; force a new connection attempt
+        if (!isConnected)
+        {
+            this.connectPromise = null;
+        }
+
         // If already connecting/connected, reuse that connection
         if (this.connectPromise)
         {
             return this.connectPromise;
         }
 
-        this.connectPromise = new Promise<void>((resolve, reject) =>
+        this.connectPromise = new Promise<void>(async (resolve, reject) =>
         {
-            this.client.connect()
-            .catch((err) =>
+            try
             {
-                this.connectPromise = null; // Reset on error
-                this.close({ guid })
-                .finally(() =>
-                {
-                    reject(err);
-                })
-            })
-            .finally(() =>
-            {
+                await this.client.connect();
                 resolve();
-            });
+            }
+            catch (err)
+            {
+                this.connectPromise = null; // Clear on error so retry works
+                reject(err);
+            }
         });
 
         return this.connectPromise;
@@ -117,47 +122,44 @@ export class MongoDbConnection
         return new Promise<void>((resolve, reject) =>
         {
             // Remove the given audit log
-            const index = this.auditLogs.findIndex(({ guid }) => guid === auditLogGuid);
-            if (index >= 0)
-            {
-                this.auditLogs.splice(index, 1);
-            }
+            this.removeAuditLog(auditLogGuid);
 
             // Remove any audit logs exceeding the max allowed connection time
-            const indicesToRemove: number[] = [];
-            for (let i = 0; i < this.auditLogs.length; i += 1)
-            {
-                const { unixTimestamp } = this.auditLogs[i];
-                const elaspedTimeInMillis = Date.now() - unixTimestamp;
-
-                if (elaspedTimeInMillis >= MAX_CONNECTION_OPEN_TIME)
-                {
-                    indicesToRemove.push(i);
-                }
-            }
-            indicesToRemove.forEach(i => this.auditLogs.splice(i, 1));
+            this.auditLogs = this.auditLogs.filter(
+                (log) => Date.now() - log.unixTimestamp < MAX_CONNECTION_OPEN_TIME
+            );
 
             // There's other operations still happening, so don't close yet
             if (this.auditLogs.length > 0)
             {
                 resolve();
+                return;
             }
 
+            // Immediately clear connectPromise so pending/future calls don't attach to a closing client
+            this.connectPromise = null;
+
             // There's no other operations happening, so close the connection
-            else
+            this.client.close()
+            .then(() =>
             {
-                this.client.close()
-                .catch((err) =>
-                {
-                    reject(err);
-                })
-                .finally(() =>
-                {
-                    this.connectPromise = null;  // Reset so next open() will reconnect
-                    resolve();
-                });
-            }
+                resolve();
+            })
+            .catch((err) =>
+            {
+                reject(err);
+            });
         });
+    }
+
+    public removeAuditLog(guid: UUID): void
+    {
+        const index = this.auditLogs.findIndex((log) => log.guid === guid);
+
+        if (index >= 0)
+        {
+            this.auditLogs.splice(index, 1);
+        }
     }
 
     private getMongoUri(uri: string)
